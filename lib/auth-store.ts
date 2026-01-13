@@ -143,5 +143,5 @@ export async function getUserFromToken(token: string | null): Promise<UserRecord
     return null;
   }
 
-  return findUserById(session.userId) ?? null;
+  return (await findUserById(session.userId)) ?? null;
 }
