@@ -77,7 +77,7 @@ const emptyMatchForm = {
   away: '',
   competition: '',
   stadium: '',
-  status: 'upcoming' as const,
+  status: 'upcoming' as MatchEntry['status'],
   score: '',
   result: '' as '' | 'W' | 'D' | 'L',
 };
