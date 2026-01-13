@@ -53,7 +53,15 @@ export async function PUT(request: Request) {
         isNonEmptyString(event.player) &&
         isNonEmptyString(event.detail)
     )
-    .map((event) => ({ ...event, type: event.type as 'goal' | 'card' | 'substitution' | 'chance' }));
+    .map(
+      (event: {
+        minute: number;
+        team: string;
+        type: string;
+        player: string;
+        detail: string;
+      }) => ({ ...event, type: event.type as 'goal' | 'card' | 'substitution' | 'chance' })
+    );
 
   const updated = { ...liveMatch, events: nextEvents };
   await writeLiveMatch(updated);
