@@ -1,0 +1,117 @@
+{
+  "status": "live",
+  "minute": 67,
+  "period": "2H",
+  "competition": "Ligue 1",
+  "stadium": "Parc des Princes",
+  "referee": "Clement Turpin",
+  "kickoff": "2026-02-18T21:00:00+01:00",
+  "home": {
+    "name": "PSG",
+    "score": 2,
+    "shots": 12,
+    "shotsOnTarget": 6,
+    "possession": 61,
+    "passes": 512,
+    "passAccuracy": 89,
+    "fouls": 7,
+    "corners": 5,
+    "offsides": 1,
+    "xg": 1.9
+  },
+  "away": {
+    "name": "Lille",
+    "score": 1,
+    "shots": 9,
+    "shotsOnTarget": 4,
+    "possession": 39,
+    "passes": 348,
+    "passAccuracy": 83,
+    "fouls": 11,
+    "corners": 2,
+    "offsides": 2,
+    "xg": 0.9
+  },
+  "moment": {
+    "title": "Moment du match",
+    "description": "Un pressing haut, recuperation immediate et une frappe croisee pour reprendre l'avantage."
+  },
+  "events": [
+    {
+      "minute": 7,
+      "team": "PSG",
+      "type": "goal",
+      "player": "K. Mbappe",
+      "detail": "Frappe du droit dans la surface."
+    },
+    {
+      "minute": 23,
+      "team": "Lille",
+      "type": "card",
+      "player": "B. Diakite",
+      "detail": "Carton jaune pour faute tactique."
+    },
+    {
+      "minute": 41,
+      "team": "Lille",
+      "type": "goal",
+      "player": "J. David",
+      "detail": "Egalisation sur contre rapide."
+    },
+    {
+      "minute": 52,
+      "team": "PSG",
+      "type": "substitution",
+      "player": "Kolo Muani",
+      "detail": "Entre pour apporter de la profondeur."
+    },
+    {
+      "minute": 58,
+      "team": "PSG",
+      "type": "goal",
+      "player": "O. Dembele",
+      "detail": "Frappe enroulee a l'entree de la surface."
+    },
+    {
+      "minute": 64,
+      "team": "Lille",
+      "type": "chance",
+      "player": "Y. Yazici",
+      "detail": "Tir cadre, bel arret du gardien."
+    }
+  ],
+  "lineups": {
+    "home": [
+      "Donnarumma",
+      "Hakimi",
+      "Marquinhos",
+      "Skriniar",
+      "Hernandez",
+      "Ugarte",
+      "Vitinha",
+      "Zaire-Emery",
+      "Dembele",
+      "Mbappe",
+      "Barcola"
+    ],
+    "away": [
+      "Chevalier",
+      "Ismaily",
+      "Diakite",
+      "Alexsandro",
+      "Tiago Santos",
+      "Andre",
+      "Cabella",
+      "Gomes",
+      "Zhegrova",
+      "David",
+      "Yazici"
+    ]
+  },
+  "nextMatch": {
+    "opponent": "Olympique Lyonnais",
+    "date": "2026-02-23",
+    "competition": "Ligue 1",
+    "venue": "Groupama Stadium"
+  }
+}

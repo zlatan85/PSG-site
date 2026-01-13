@@ -1,0 +1,330 @@
+{
+  "players": [
+    {
+      "id": 1,
+      "name": "Lucas Chevalier",
+      "position": "Goalkeeper",
+      "group": "goalkeeper",
+      "number": 30,
+      "nationality": "France",
+      "age": 24,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/463600-1708342501.jpg?lm=1"
+    },
+    {
+      "id": 2,
+      "name": "Matvey Safonov",
+      "position": "Goalkeeper",
+      "group": "goalkeeper",
+      "number": 39,
+      "nationality": "Russia",
+      "age": 26,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/318470-1732658603.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 3,
+      "name": "Renato Marin",
+      "position": "Goalkeeper",
+      "group": "goalkeeper",
+      "number": 89,
+      "nationality": "Italy",
+      "age": 19,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/1041614-1730123074.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 4,
+      "name": "Achraf Hakimi",
+      "position": "Right Back",
+      "group": "defender",
+      "number": 2,
+      "nationality": "Morocco",
+      "age": 27,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/398073-1672304327.jpg?lm=1 /api/placeholder/300/400"
+    },
+    {
+      "id": 5,
+      "name": "Lucas Hernandez",
+      "position": "Left Back",
+      "group": "defender",
+      "number": 21,
+      "nationality": "France",
+      "age": 29,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/281963-1667830435.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 6,
+      "name": "Marquinhos",
+      "position": "Centre Back",
+      "group": "defender",
+      "number": 5,
+      "nationality": "Brazil",
+      "age": 31,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/181767-1672303747.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 7,
+      "name": "Willian Pacho",
+      "position": "Centre Back",
+      "group": "defender",
+      "number": 51,
+      "nationality": "Ecuador",
+      "age": 24,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/661171-1696508666.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 8,
+      "name": "Ilya Zabarnyi",
+      "position": "Centre Back",
+      "group": "defender",
+      "number": 6,
+      "nationality": "Ukraine",
+      "age": 23,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/659089-1760065378.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 9,
+      "name": "Lucas Beraldo",
+      "position": "Centre Back",
+      "group": "defender",
+      "number": 4,
+      "nationality": "Brazil",
+      "age": 22,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/872171-1715107660.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 10,
+      "name": "Nuno Mendes",
+      "position": "Left Back",
+      "group": "defender",
+      "number": 25,
+      "nationality": "Portugal",
+      "age": 23,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/616341-1749417164.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 11,
+      "name": "Noham Kamara",
+      "position": "Centre Back",
+      "group": "defender",
+      "number": 43,
+      "nationality": "France",
+      "age": 18,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/1275040-1752476961.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 12,
+      "name": "Vitinha",
+      "position": "Defensive Midfielder",
+      "group": "midfielder",
+      "number": 17,
+      "nationality": "Portugal",
+      "age": 25,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/487469-1749415169.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 13,
+      "name": "Joao Neves",
+      "position": "Central Midfielder",
+      "group": "midfielder",
+      "number": 87,
+      "nationality": "Portugal",
+      "age": 21,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/670681-1701295511.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 14,
+      "name": "Warren Zaire-Emery",
+      "position": "Central Midfielder",
+      "group": "midfielder",
+      "number": 33,
+      "nationality": "France",
+      "age": 19,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/810092-1672303575.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 15,
+      "name": "Fabian Ruiz",
+      "position": "Central Midfielder",
+      "group": "midfielder",
+      "number": 8,
+      "nationality": "Spain",
+      "age": 29,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/350219-1718958379.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 16,
+      "name": "Senny Mayulu",
+      "position": "Central Midfielder",
+      "group": "midfielder",
+      "number": 24,
+      "nationality": "France",
+      "age": 19,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/903693-1716562599.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 17,
+      "name": "Kang-in Lee",
+      "position": "Attacking Midfielder",
+      "group": "midfielder",
+      "number": 19,
+      "nationality": "South Korea",
+      "age": 24,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/557149-1703978046.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 18,
+      "name": "Khvicha Kvaratskhelia",
+      "position": "Left Winger",
+      "group": "forward",
+      "number": 7,
+      "nationality": "Georgia",
+      "age": 24,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/502670-1708553120.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 19,
+      "name": "Bradley Barcola",
+      "position": "Left Winger",
+      "group": "forward",
+      "number": 29,
+      "nationality": "France",
+      "age": 23,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/708265-1653406915.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 20,
+      "name": "Desire Doue",
+      "position": "Right Winger",
+      "group": "forward",
+      "number": 14,
+      "nationality": "France",
+      "age": 20,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/914562-1667317075.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 21,
+      "name": "Ousmane Dembele",
+      "position": "Forward",
+      "group": "forward",
+      "number": 10,
+      "nationality": "France",
+      "age": 28,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/288230-1684148641.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 22,
+      "name": "Goncalo Ramos",
+      "position": "Striker",
+      "group": "forward",
+      "number": 9,
+      "nationality": "Portugal",
+      "age": 24,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/550550-1681906158.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 23,
+      "name": "Quentin Ndjantou",
+      "position": "Left Winger",
+      "group": "forward",
+      "number": 47,
+      "nationality": "France",
+      "age": 18,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/1053208-1759747972.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 24,
+      "name": "Ibrahim Mbaye",
+      "position": "Right Winger",
+      "group": "forward",
+      "number": 49,
+      "nationality": "Senegal",
+      "age": 17,
+      "image": "https://img.a.transfermarkt.technology/portrait/big/1185888-1759430450.jpg?lm=1/api/placeholder/300/400"
+    }
+  ],
+  "staff": [
+    {
+      "id": 1,
+      "name": "Luis Enrique",
+      "role": "Head Coach",
+      "nationality": "Spain",
+      "image": "https://img.a.transfermarkt.technology/portrait/big/6499-1746692948.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 2,
+      "name": "Rafel Pol",
+      "role": "Assistant Coach",
+      "nationality": "Spain",
+      "image": "/api/placeholder/300/400"
+    },
+    {
+      "id": 3,
+      "name": "Guillem Hernandez",
+      "role": "Assistant Coach",
+      "nationality": "Spain",
+      "image": "/api/placeholder/300/400"
+    },
+    {
+      "id": 4,
+      "name": "Pedro Gomez",
+      "role": "Fitness Coach",
+      "nationality": "Spain",
+      "image": "/api/placeholder/300/400"
+    },
+    {
+      "id": 5,
+      "name": "Alberto Piernas",
+      "role": "Assistant Fitness Coach",
+      "nationality": "Spain",
+      "image": "https://img.a.transfermarkt.technology/portrait/big/126008-1740676510.png?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 6,
+      "name": "Borja Alvarez",
+      "role": "Goalkeeper Coach",
+      "nationality": "Spain",
+      "image": "https://img.a.transfermarkt.technology/portrait/big/76020-1630340266.jpg?lm=1/api/placeholder/300/400"
+    },
+    {
+      "id": 7,
+      "name": "Nicolas Cousin",
+      "role": "Assistant Goalkeeper Coach",
+      "nationality": "France",
+      "image": "/api/placeholder/300/400"
+    },
+    {
+      "id": 8,
+      "name": "Vincent Brunet",
+      "role": "Video Analyst",
+      "nationality": "France",
+      "image": "/api/placeholder/300/400"
+    },
+    {
+      "id": 9,
+      "name": "Antoine Guillotin",
+      "role": "Video Analyst",
+      "nationality": "France",
+      "image": "https://www.geniescout.com/scope/2000134596.png"
+    },
+    {
+      "id": 10,
+      "name": "Dorian Godard",
+      "role": "Team Manager",
+      "nationality": "France",
+      "image": "/api/placeholder/300/400"
+    },
+    {
+      "id": 11,
+      "name": "Jocelyn Gabriel",
+      "role": "Assistant Team Manager",
+      "nationality": "France",
+      "image": "/api/placeholder/300/400"
+    },
+    {
+      "id": 12,
+      "name": "Joaquin Valdes",
+      "role": "Sports Psychologist",
+      "nationality": "Spain",
+      "image": "/api/placeholder/300/400"
+    }
+  ]
+}

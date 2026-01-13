@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    Int      @id @default(autoincrement())
+  name                  String
+  email                 String   @unique
+  salt                  String
+  passwordHash          String
+  emailVerified         Boolean  @default(false)
+  verificationCode      String?
+  verificationExpiresAt DateTime?
+  createdAt             DateTime @default(now())
+  sessions              Session[]
+}
+
+model Session {
+  token     String   @id
+  userId    Int
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FanWallPost {
+  id        Int      @id @default(autoincrement())
+  name      String
+  handle    String?
+  message   String   @db.Text
+  time      String?
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model NewsArticle {
+  id      Int    @id @default(autoincrement())
+  title   String
+  excerpt String @db.Text
+  content String? @db.LongText
+  image   String @db.Text
+  date    String
+}
+
+model Match {
+  id          Int     @id @default(autoincrement())
+  date        String
+  time        String
+  home        String
+  away        String
+  competition String
+  stadium     String
+  status      String
+  score       String?
+  result      String?
+}
+
+model Player {
+  id          Int    @id @default(autoincrement())
+  name        String
+  position    String
+  groupName   String @map("group")
+  number      Int
+  nationality String
+  age         Int
+  image       String @db.Text
+}
+
+model Staff {
+  id          Int    @id @default(autoincrement())
+  name        String
+  role        String
+  nationality String
+  image       String @db.Text
+}
+
+model LiveMatch {
+  id      Int  @id
+  payload Json
+}

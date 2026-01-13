@@ -1,0 +1,1643 @@
+'use client';
+
+import type { ChangeEvent, FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FadeIn, ScaleIn } from '../../components/MotionWrapper';
+
+interface NewsArticle {
+  id: number;
+  title: string;
+  excerpt: string;
+  image: string;
+  date: string;
+  content?: string;
+}
+
+interface MatchEntry {
+  id: number;
+  date: string;
+  time: string;
+  home: string;
+  away: string;
+  competition: string;
+  stadium: string;
+  status: 'upcoming' | 'played';
+  score?: string;
+  result?: 'W' | 'D' | 'L';
+}
+
+interface PlayerEntry {
+  id: number;
+  name: string;
+  position: string;
+  group: 'goalkeeper' | 'defender' | 'midfielder' | 'forward';
+  number: number;
+  nationality: string;
+  age: number;
+  image: string;
+}
+
+interface StaffEntry {
+  id: number;
+  name: string;
+  role: string;
+  nationality: string;
+  image: string;
+}
+
+interface LiveMatchEvent {
+  minute: number;
+  team: string;
+  type: 'goal' | 'card' | 'substitution' | 'chance';
+  player: string;
+  detail: string;
+}
+
+interface FanWallPost {
+  id: number;
+  name: string;
+  handle: string;
+  message: string;
+  time: string;
+  approved: boolean;
+}
+
+const emptyForm = {
+  title: '',
+  excerpt: '',
+  image: '',
+  date: '',
+  content: '',
+};
+
+const emptyMatchForm = {
+  date: '',
+  time: '',
+  home: '',
+  away: '',
+  competition: '',
+  stadium: '',
+  status: 'upcoming' as const,
+  score: '',
+  result: '' as '' | 'W' | 'D' | 'L',
+};
+
+const emptyPlayerForm = {
+  name: '',
+  position: '',
+  group: 'goalkeeper' as PlayerEntry['group'],
+  number: '',
+  nationality: '',
+  age: '',
+  image: '',
+};
+
+const emptyStaffForm = {
+  name: '',
+  role: '',
+  nationality: '',
+  image: '',
+};
+
+const emptyLiveEventForm: LiveMatchEvent = {
+  minute: 0,
+  team: '',
+  type: 'goal',
+  player: '',
+  detail: '',
+};
+
+const emptyFanWallForm: FanWallPost = {
+  id: 0,
+  name: '',
+  handle: '',
+  message: '',
+  time: '',
+  approved: true,
+};
+
+export default function AdminPage() {
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [matches, setMatches] = useState<MatchEntry[]>([]);
+  const [matchForm, setMatchForm] = useState(emptyMatchForm);
+  const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
+  const [matchesLoading, setMatchesLoading] = useState(true);
+  const [matchSaving, setMatchSaving] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
+  const [players, setPlayers] = useState<PlayerEntry[]>([]);
+  const [staff, setStaff] = useState<StaffEntry[]>([]);
+  const [playerForm, setPlayerForm] = useState(emptyPlayerForm);
+  const [staffForm, setStaffForm] = useState(emptyStaffForm);
+  const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
+  const [editingStaffId, setEditingStaffId] = useState<number | null>(null);
+  const [squadLoading, setSquadLoading] = useState(true);
+  const [playerSaving, setPlayerSaving] = useState(false);
+  const [staffSaving, setStaffSaving] = useState(false);
+  const [playerError, setPlayerError] = useState<string | null>(null);
+  const [staffError, setStaffError] = useState<string | null>(null);
+  const newsContentRef = useRef<HTMLTextAreaElement | null>(null);
+  const [liveEvents, setLiveEvents] = useState<LiveMatchEvent[]>([]);
+  const [liveEventForm, setLiveEventForm] = useState<LiveMatchEvent>(emptyLiveEventForm);
+  const [editingLiveEventIndex, setEditingLiveEventIndex] = useState<number | null>(null);
+  const [liveLoading, setLiveLoading] = useState(true);
+  const [liveSaving, setLiveSaving] = useState(false);
+  const [liveError, setLiveError] = useState<string | null>(null);
+  const [fanWallPosts, setFanWallPosts] = useState<FanWallPost[]>([]);
+  const [fanWallForm, setFanWallForm] = useState<FanWallPost>(emptyFanWallForm);
+  const [editingFanWallId, setEditingFanWallId] = useState<number | null>(null);
+  const [fanWallLoading, setFanWallLoading] = useState(true);
+  const [fanWallSaving, setFanWallSaving] = useState(false);
+  const [fanWallError, setFanWallError] = useState<string | null>(null);
+
+  const sortedArticles = useMemo(
+    () => [...articles].sort((a, b) => b.date.localeCompare(a.date)),
+    [articles]
+  );
+
+  const sortedMatches = useMemo(
+    () => [...matches].sort((a, b) => b.date.localeCompare(a.date)),
+    [matches]
+  );
+
+  const sortedPlayers = useMemo(
+    () => [...players].sort((a, b) => a.number - b.number),
+    [players]
+  );
+
+  const sortedStaff = useMemo(
+    () => [...staff].sort((a, b) => a.name.localeCompare(b.name)),
+    [staff]
+  );
+
+  const sortedLiveEvents = useMemo(
+    () =>
+      liveEvents
+        .map((eventItem, index) => ({ eventItem, index }))
+        .sort((a, b) => a.eventItem.minute - b.eventItem.minute),
+    [liveEvents]
+  );
+
+  const sortedFanWall = useMemo(
+    () => [...fanWallPosts].sort((a, b) => a.id - b.id),
+    [fanWallPosts]
+  );
+
+  const loadArticles = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/news');
+      const data = await response.json();
+      setArticles(Array.isArray(data) ? data : []);
+    } catch (loadError) {
+      console.error('Failed to load news:', loadError);
+      setError('Impossible de charger les articles.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMatches = async () => {
+    try {
+      setMatchesLoading(true);
+      const response = await fetch('/api/matches');
+      const data = await response.json();
+      setMatches(Array.isArray(data) ? data : []);
+    } catch (loadError) {
+      console.error('Failed to load matches:', loadError);
+      setMatchError('Impossible de charger le calendrier.');
+    } finally {
+      setMatchesLoading(false);
+    }
+  };
+
+  const loadSquad = async () => {
+    try {
+      setSquadLoading(true);
+      const response = await fetch('/api/squad');
+      const data = await response.json();
+      setPlayers(Array.isArray(data?.players) ? data.players : []);
+      setStaff(Array.isArray(data?.staff) ? data.staff : []);
+    } catch (loadError) {
+      console.error('Failed to load squad:', loadError);
+      setPlayerError('Impossible de charger l\'effectif.');
+      setStaffError('Impossible de charger le staff.');
+    } finally {
+      setSquadLoading(false);
+    }
+  };
+
+  const loadLiveMatch = async () => {
+    try {
+      setLiveLoading(true);
+      const response = await fetch('/api/live-match');
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+      const data = await response.json();
+      setLiveEvents(Array.isArray(data?.events) ? data.events : []);
+    } catch (loadError) {
+      console.error('Failed to load live match:', loadError);
+      setLiveError('Impossible de charger le live match.');
+    } finally {
+      setLiveLoading(false);
+    }
+  };
+
+  const loadFanWall = async () => {
+    try {
+      setFanWallLoading(true);
+      const response = await fetch('/api/fan-wall?all=1');
+      const data = await response.json();
+      setFanWallPosts(Array.isArray(data) ? data : []);
+    } catch (loadError) {
+      console.error('Failed to load fan wall:', loadError);
+      setFanWallError('Impossible de charger la fan zone.');
+    } finally {
+      setFanWallLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadArticles();
+    loadMatches();
+    loadSquad();
+    loadLiveMatch();
+    loadFanWall();
+  }, []);
+
+  const handleChange = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const insertMarkdown = (before: string, after = '') => {
+    const textarea = newsContentRef.current;
+    if (!textarea) {
+      setForm((current) => ({ ...current, content: `${current.content}${before}${after}` }));
+      return;
+    }
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selected = value.slice(selectionStart, selectionEnd);
+    const nextValue = `${value.slice(0, selectionStart)}${before}${selected}${after}${value.slice(selectionEnd)}`;
+    setForm((current) => ({ ...current, content: nextValue }));
+
+    requestAnimationFrame(() => {
+      const cursorStart = selectionStart + before.length;
+      const cursorEnd = cursorStart + selected.length;
+      textarea.focus();
+      textarea.setSelectionRange(cursorStart, cursorEnd);
+    });
+  };
+
+  const handleMatchChange = (field: keyof typeof matchForm) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setMatchForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const handlePlayerChange = (field: keyof typeof playerForm) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setPlayerForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const handleStaffChange = (field: keyof typeof staffForm) => (event: ChangeEvent<HTMLInputElement>) => {
+    setStaffForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const handleLiveEventChange = (field: keyof LiveMatchEvent) => (
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const value = field === 'minute' ? Number(event.target.value) : event.target.value;
+    setLiveEventForm((current) => ({ ...current, [field]: value } as LiveMatchEvent));
+  };
+
+  const handleFanWallChange = (field: keyof FanWallPost) => (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const value = field === 'approved' && event.target instanceof HTMLInputElement
+      ? event.target.checked
+      : event.target.value;
+    setFanWallForm((current) => ({ ...current, [field]: value } as FanWallPost));
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setSaving(true);
+
+    try {
+    const payload = {
+      ...form,
+      image: form.image.trim() || '/api/placeholder/600/400',
+    };
+
+      const response = await fetch('/api/news', {
+        method: editingId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingId ? { id: editingId, ...payload } : payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      setForm(emptyForm);
+      setEditingId(null);
+      await loadArticles();
+    } catch (submitError) {
+      console.error('Failed to save news:', submitError);
+      setError('Impossible de sauvegarder cet article.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleMatchSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setMatchError(null);
+    setMatchSaving(true);
+
+    try {
+      const payload = {
+        ...matchForm,
+        score: matchForm.score.trim(),
+        result: matchForm.result || undefined,
+      };
+
+      const response = await fetch('/api/matches', {
+        method: editingMatchId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingMatchId ? { id: editingMatchId, ...payload } : payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      setMatchForm(emptyMatchForm);
+      setEditingMatchId(null);
+      await loadMatches();
+    } catch (submitError) {
+      console.error('Failed to save match:', submitError);
+      setMatchError('Impossible de sauvegarder ce match.');
+    } finally {
+      setMatchSaving(false);
+    }
+  };
+
+  const handlePlayerSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setPlayerError(null);
+    setPlayerSaving(true);
+
+    try {
+      const payload = {
+        kind: 'player',
+        name: playerForm.name,
+        position: playerForm.position,
+        group: playerForm.group,
+        number: Number(playerForm.number),
+        nationality: playerForm.nationality,
+        age: Number(playerForm.age),
+        image: playerForm.image.trim() || '/api/placeholder/300/400',
+      };
+
+      const response = await fetch('/api/squad', {
+        method: editingPlayerId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingPlayerId ? { id: editingPlayerId, ...payload } : payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      setPlayerForm(emptyPlayerForm);
+      setEditingPlayerId(null);
+      await loadSquad();
+    } catch (submitError) {
+      console.error('Failed to save player:', submitError);
+      setPlayerError('Impossible de sauvegarder ce joueur.');
+    } finally {
+      setPlayerSaving(false);
+    }
+  };
+
+  const handleStaffSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setStaffError(null);
+    setStaffSaving(true);
+
+    try {
+      const payload = {
+        kind: 'staff',
+        name: staffForm.name,
+        role: staffForm.role,
+        nationality: staffForm.nationality,
+        image: staffForm.image.trim() || '/api/placeholder/300/400',
+      };
+
+      const response = await fetch('/api/squad', {
+        method: editingStaffId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingStaffId ? { id: editingStaffId, ...payload } : payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      setStaffForm(emptyStaffForm);
+      setEditingStaffId(null);
+      await loadSquad();
+    } catch (submitError) {
+      console.error('Failed to save staff:', submitError);
+      setStaffError('Impossible de sauvegarder ce membre du staff.');
+    } finally {
+      setStaffSaving(false);
+    }
+  };
+
+  const handleLiveEventSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    setLiveError(null);
+
+    const trimmedEvent = {
+      ...liveEventForm,
+      team: liveEventForm.team.trim(),
+      player: liveEventForm.player.trim(),
+      detail: liveEventForm.detail.trim(),
+    };
+
+    if (!trimmedEvent.team || !trimmedEvent.player || !trimmedEvent.detail) {
+      setLiveError('Merci de remplir tous les champs de l\'evenement.');
+      return;
+    }
+
+    setLiveEvents((current) => {
+      if (editingLiveEventIndex === null) {
+        return [...current, trimmedEvent];
+      }
+      return current.map((item, index) => (index === editingLiveEventIndex ? trimmedEvent : item));
+    });
+
+    setLiveEventForm(emptyLiveEventForm);
+    setEditingLiveEventIndex(null);
+  };
+
+  const handleFanWallSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    setFanWallError(null);
+
+    const trimmedPost = {
+      ...fanWallForm,
+      name: fanWallForm.name.trim(),
+      handle: fanWallForm.handle.trim(),
+      message: fanWallForm.message.trim(),
+      time: fanWallForm.time.trim(),
+    };
+
+    if (!trimmedPost.name || !trimmedPost.message) {
+      setFanWallError('Merci de remplir au moins le nom et le message.');
+      return;
+    }
+
+    setFanWallPosts((current) => {
+      if (editingFanWallId === null) {
+        const nextId = current.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
+        return [...current, { ...trimmedPost, id: nextId, approved: true }];
+      }
+      return current.map((item) => (item.id === editingFanWallId ? { ...trimmedPost, id: item.id } : item));
+    });
+
+    setFanWallForm(emptyFanWallForm);
+    setEditingFanWallId(null);
+  };
+
+  const startEdit = (article: NewsArticle) => {
+    setForm({
+      title: article.title,
+      excerpt: article.excerpt,
+      image: article.image,
+      date: article.date,
+      content: article.content ?? '',
+    });
+    setEditingId(article.id);
+    setError(null);
+  };
+
+  const startMatchEdit = (match: MatchEntry) => {
+    setMatchForm({
+      date: match.date,
+      time: match.time,
+      home: match.home,
+      away: match.away,
+      competition: match.competition,
+      stadium: match.stadium,
+      status: match.status,
+      score: match.score ?? '',
+      result: match.result ?? '',
+    });
+    setEditingMatchId(match.id);
+    setMatchError(null);
+  };
+
+  const startPlayerEdit = (player: PlayerEntry) => {
+    setPlayerForm({
+      name: player.name,
+      position: player.position,
+      group: player.group,
+      number: String(player.number),
+      nationality: player.nationality,
+      age: String(player.age),
+      image: player.image,
+    });
+    setEditingPlayerId(player.id);
+    setPlayerError(null);
+  };
+
+  const startStaffEdit = (member: StaffEntry) => {
+    setStaffForm({
+      name: member.name,
+      role: member.role,
+      nationality: member.nationality,
+      image: member.image,
+    });
+    setEditingStaffId(member.id);
+    setStaffError(null);
+  };
+
+  const startLiveEventEdit = (eventItem: LiveMatchEvent, index: number) => {
+    setLiveEventForm(eventItem);
+    setEditingLiveEventIndex(index);
+    setLiveError(null);
+  };
+
+  const startFanWallEdit = (post: FanWallPost) => {
+    setFanWallForm(post);
+    setEditingFanWallId(post.id);
+    setFanWallError(null);
+  };
+
+  const cancelEdit = () => {
+    setForm(emptyForm);
+    setEditingId(null);
+    setError(null);
+  };
+
+  const cancelMatchEdit = () => {
+    setMatchForm(emptyMatchForm);
+    setEditingMatchId(null);
+    setMatchError(null);
+  };
+
+  const cancelPlayerEdit = () => {
+    setPlayerForm(emptyPlayerForm);
+    setEditingPlayerId(null);
+    setPlayerError(null);
+  };
+
+  const cancelStaffEdit = () => {
+    setStaffForm(emptyStaffForm);
+    setEditingStaffId(null);
+    setStaffError(null);
+  };
+
+  const cancelLiveEventEdit = () => {
+    setLiveEventForm(emptyLiveEventForm);
+    setEditingLiveEventIndex(null);
+    setLiveError(null);
+  };
+
+  const cancelFanWallEdit = () => {
+    setFanWallForm(emptyFanWallForm);
+    setEditingFanWallId(null);
+    setFanWallError(null);
+  };
+
+  const deleteArticle = async (id: number) => {
+    const confirmed = window.confirm('Supprimer cet article ?');
+    if (!confirmed) return;
+
+    try {
+      setSaving(true);
+      const response = await fetch('/api/news', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      await loadArticles();
+    } catch (deleteError) {
+      console.error('Failed to delete news:', deleteError);
+      setError('Impossible de supprimer cet article.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteMatch = async (id: number) => {
+    const confirmed = window.confirm('Supprimer ce match ?');
+    if (!confirmed) return;
+
+    try {
+      setMatchSaving(true);
+      const response = await fetch('/api/matches', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      await loadMatches();
+    } catch (deleteError) {
+      console.error('Failed to delete match:', deleteError);
+      setMatchError('Impossible de supprimer ce match.');
+    } finally {
+      setMatchSaving(false);
+    }
+  };
+
+  const deletePlayer = async (id: number) => {
+    const confirmed = window.confirm('Supprimer ce joueur ?');
+    if (!confirmed) return;
+
+    try {
+      setPlayerSaving(true);
+      const response = await fetch('/api/squad', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, kind: 'player' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      await loadSquad();
+    } catch (deleteError) {
+      console.error('Failed to delete player:', deleteError);
+      setPlayerError('Impossible de supprimer ce joueur.');
+    } finally {
+      setPlayerSaving(false);
+    }
+  };
+
+  const deleteStaff = async (id: number) => {
+    const confirmed = window.confirm('Supprimer ce membre du staff ?');
+    if (!confirmed) return;
+
+    try {
+      setStaffSaving(true);
+      const response = await fetch('/api/squad', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, kind: 'staff' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      await loadSquad();
+    } catch (deleteError) {
+      console.error('Failed to delete staff:', deleteError);
+      setStaffError('Impossible de supprimer ce membre du staff.');
+    } finally {
+      setStaffSaving(false);
+    }
+  };
+
+  const deleteLiveEvent = (index: number) => {
+    const confirmed = window.confirm('Supprimer cet evenement ?');
+    if (!confirmed) return;
+    setLiveEvents((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  const saveLiveTimeline = async () => {
+    setLiveError(null);
+    setLiveSaving(true);
+
+    try {
+      const response = await fetch('/api/live-match', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: liveEvents }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setLiveEvents(Array.isArray(data?.events) ? data.events : []);
+      setLiveEventForm(emptyLiveEventForm);
+      setEditingLiveEventIndex(null);
+    } catch (saveError) {
+      console.error('Failed to save live events:', saveError);
+      setLiveError('Impossible de sauvegarder la timeline.');
+    } finally {
+      setLiveSaving(false);
+    }
+  };
+
+  const saveFanWall = async () => {
+    setFanWallError(null);
+    setFanWallSaving(true);
+
+    try {
+      const response = await fetch('/api/fan-wall', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ posts: fanWallPosts }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setFanWallPosts(Array.isArray(data) ? data : []);
+      setFanWallForm(emptyFanWallForm);
+      setEditingFanWallId(null);
+    } catch (saveError) {
+      console.error('Failed to save fan wall:', saveError);
+      setFanWallError('Impossible de sauvegarder la fan zone.');
+    } finally {
+      setFanWallSaving(false);
+    }
+  };
+
+  const deleteFanWallPost = (id: number) => {
+    const confirmed = window.confirm('Supprimer ce message fan wall ?');
+    if (!confirmed) return;
+    setFanWallPosts((current) => current.filter((item) => item.id !== id));
+    if (editingFanWallId === id) {
+      setFanWallForm(emptyFanWallForm);
+      setEditingFanWallId(null);
+    }
+  };
+
+  const toggleFanWallApproval = (id: number) => {
+    setFanWallPosts((current) =>
+      current.map((item) => (item.id === id ? { ...item, approved: !item.approved } : item))
+    );
+  };
+
+  const previewImage = form.image.trim() || '/api/placeholder/600/400';
+  const previewPlayerImage = playerForm.image.trim() || '/api/placeholder/300/400';
+  const previewStaffImage = staffForm.image.trim() || '/api/placeholder/300/400';
+
+  return (
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <FadeIn delay={0.2}>
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold text-white mb-4">Administration</h1>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Ajoutez, modifiez et supprimez les articles et leurs images.
+            </p>
+          </div>
+        </FadeIn>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <FadeIn delay={0.3}>
+            <form onSubmit={handleSubmit} className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">
+                {editingId ? 'Modifier un article' : 'Nouvel article'}
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Titre"
+                  value={form.title}
+                  onChange={handleChange('title')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <textarea
+                  placeholder="Extrait"
+                  value={form.excerpt}
+                  onChange={handleChange('excerpt')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[120px]"
+                  required
+                />
+                <textarea
+                  placeholder="Contenu complet"
+                  value={form.content}
+                  onChange={handleChange('content')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[200px]"
+                  ref={newsContentRef}
+                />
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('## ')}
+                    className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                  >
+                    Titre
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('### ')}
+                    className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                  >
+                    Sous-titre
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('- ')}
+                    className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                  >
+                    Liste
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('> ')}
+                    className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                  >
+                    Citation
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('**', '**')}
+                    className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                  >
+                    Gras
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('*', '*')}
+                    className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                  >
+                    Italique
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400">
+                  Raccourcis markdown: ## Titre, ### Sous-titre, - Liste, &gt; Citation, **gras**, *italique*.
+                </p>
+                <input
+                  type="url"
+                  placeholder="URL de l'image"
+                  value={form.image}
+                  onChange={handleChange('image')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="date"
+                  value={form.date}
+                  onChange={handleChange('date')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+              </div>
+
+              <div className="rounded-lg overflow-hidden border border-white/10">
+                <img src={previewImage} alt="Preview" className="h-40 w-full object-cover" />
+              </div>
+
+              {error && <div className="text-sm text-red-300">{error}</div>}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {saving ? 'Sauvegarde...' : editingId ? 'Mettre a jour' : 'Ajouter'}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                )}
+              </div>
+            </form>
+          </FadeIn>
+
+          <div className="space-y-4">
+            <FadeIn delay={0.4}>
+              <div className="glass rounded-lg p-6">
+                <div className="text-lg font-semibold text-white mb-4">Articles existants</div>
+                {loading && <div className="text-gray-300">Chargement...</div>}
+                {!loading && sortedArticles.length === 0 && (
+                  <div className="text-gray-300">Aucun article pour le moment.</div>
+                )}
+                <div className="space-y-4">
+                  {sortedArticles.map((article, index) => (
+                    <ScaleIn key={article.id} delay={0.5 + index * 0.05}>
+                      <div className="rounded-lg border border-white/10 p-4 flex gap-4 items-center">
+                        <img
+                          src={article.image || '/api/placeholder/600/400'}
+                          alt={article.title}
+                          className="h-16 w-24 object-cover rounded-md"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold truncate">{article.title}</div>
+                          <div className="text-sm text-gray-400">{article.date}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(article)}
+                            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteArticle(article.id)}
+                            className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </ScaleIn>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <form onSubmit={handleMatchSubmit} className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">
+                {editingMatchId ? 'Modifier un match' : 'Nouveau match'}
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="date"
+                  value={matchForm.date}
+                  onChange={handleMatchChange('date')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="time"
+                  value={matchForm.time}
+                  onChange={handleMatchChange('time')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Equipe domicile"
+                  value={matchForm.home}
+                  onChange={handleMatchChange('home')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Equipe exterieure"
+                  value={matchForm.away}
+                  onChange={handleMatchChange('away')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Competition"
+                  value={matchForm.competition}
+                  onChange={handleMatchChange('competition')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Stade"
+                  value={matchForm.stadium}
+                  onChange={handleMatchChange('stadium')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <select
+                  value={matchForm.status}
+                  onChange={handleMatchChange('status')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  <option value="upcoming" className="bg-blue-900">A venir</option>
+                  <option value="played" className="bg-blue-900">Joue</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Score (ex: 2-1)"
+                  value={matchForm.score}
+                  onChange={handleMatchChange('score')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <select
+                  value={matchForm.result}
+                  onChange={handleMatchChange('result')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  <option value="" className="bg-blue-900">Resultat</option>
+                  <option value="W" className="bg-blue-900">Victoire</option>
+                  <option value="D" className="bg-blue-900">Nul</option>
+                  <option value="L" className="bg-blue-900">Defaite</option>
+                </select>
+              </div>
+
+              {matchError && <div className="text-sm text-red-300">{matchError}</div>}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={matchSaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {matchSaving ? 'Sauvegarde...' : editingMatchId ? 'Mettre a jour' : 'Ajouter'}
+                </button>
+                {editingMatchId && (
+                  <button
+                    type="button"
+                    onClick={cancelMatchEdit}
+                    className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                )}
+              </div>
+            </form>
+          </FadeIn>
+
+          <div className="space-y-4">
+            <FadeIn delay={0.4}>
+              <div className="glass rounded-lg p-6">
+                <div className="text-lg font-semibold text-white mb-4">Calendrier complet</div>
+                {matchesLoading && <div className="text-gray-300">Chargement...</div>}
+                {!matchesLoading && sortedMatches.length === 0 && (
+                  <div className="text-gray-300">Aucun match pour le moment.</div>
+                )}
+                <div className="space-y-4">
+                  {sortedMatches.map((match, index) => (
+                    <ScaleIn key={match.id} delay={0.5 + index * 0.05}>
+                      <div className="rounded-lg border border-white/10 p-4 flex gap-4 items-center">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold truncate">
+                            {match.home} vs {match.away}
+                          </div>
+                          <div className="text-sm text-gray-400">{match.date} - {match.time}</div>
+                          <div className="text-sm text-gray-400">{match.competition}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startMatchEdit(match)}
+                            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteMatch(match.id)}
+                            className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </ScaleIn>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <form onSubmit={handleFanWallSubmit} className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">
+                {editingFanWallId !== null ? 'Modifier un message fan wall' : 'Nouveau message fan wall'}
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Nom"
+                  value={fanWallForm.name}
+                  onChange={handleFanWallChange('name')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="@handle"
+                  value={fanWallForm.handle}
+                  onChange={handleFanWallChange('handle')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Temps (ex: 6 min)"
+                  value={fanWallForm.time}
+                  onChange={handleFanWallChange('time')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <textarea
+                  placeholder="Message"
+                  value={fanWallForm.message}
+                  onChange={handleFanWallChange('message')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[120px]"
+                  required
+                />
+                <label className="flex items-center gap-2 text-sm text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={fanWallForm.approved}
+                    onChange={handleFanWallChange('approved')}
+                    className="h-4 w-4 rounded border-white/20 bg-white/10 text-red-500 focus:ring-red-400"
+                  />
+                  Publie
+                </label>
+              </div>
+
+              {fanWallError && <div className="text-sm text-red-300">{fanWallError}</div>}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors"
+                >
+                  {editingFanWallId !== null ? 'Mettre a jour' : 'Ajouter'}
+                </button>
+                {editingFanWallId !== null && (
+                  <button
+                    type="button"
+                    onClick={cancelFanWallEdit}
+                    className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={saveFanWall}
+                  disabled={fanWallSaving}
+                  className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-60"
+                >
+                  {fanWallSaving ? 'Sauvegarde...' : 'Sauvegarder la fan zone'}
+                </button>
+              </div>
+            </form>
+          </FadeIn>
+
+          <div className="space-y-4">
+            <FadeIn delay={0.4}>
+              <div className="glass rounded-lg p-6">
+                <div className="text-lg font-semibold text-white mb-4">Fan wall</div>
+                {fanWallLoading && <div className="text-gray-300">Chargement...</div>}
+                {!fanWallLoading && sortedFanWall.length === 0 && (
+                  <div className="text-gray-300">Aucun message pour le moment.</div>
+                )}
+                <div className="space-y-4">
+                  {sortedFanWall.map((post, index) => (
+                    <ScaleIn key={post.id} delay={0.5 + index * 0.05}>
+                      <div className="rounded-lg border border-white/10 p-4 flex gap-4 items-center">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold truncate">{post.name}</div>
+                          <div className="text-sm text-gray-400">
+                            {post.handle} · {post.time || 'maintenant'}
+                          </div>
+                          <div className="text-sm text-gray-400 truncate">{post.message}</div>
+                          <div className="mt-2 text-xs">
+                            <span
+                              className={`inline-flex rounded-full px-2 py-1 ${
+                                post.approved ? 'bg-green-500/20 text-green-200' : 'bg-yellow-500/20 text-yellow-200'
+                              }`}
+                            >
+                              {post.approved ? 'Publie' : 'En attente'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startFanWallEdit(post)}
+                            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleFanWallApproval(post.id)}
+                            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                          >
+                            {post.approved ? 'Retirer' : 'Publier'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteFanWallPost(post.id)}
+                            className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </ScaleIn>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <form onSubmit={handleLiveEventSubmit} className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">
+                {editingLiveEventIndex !== null ? 'Modifier un evenement live' : 'Nouvel evenement live'}
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Minute (ex: 67)"
+                  value={liveEventForm.minute}
+                  onChange={handleLiveEventChange('minute')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Equipe"
+                  value={liveEventForm.team}
+                  onChange={handleLiveEventChange('team')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <select
+                  value={liveEventForm.type}
+                  onChange={handleLiveEventChange('type')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  <option value="goal" className="bg-blue-900">But</option>
+                  <option value="card" className="bg-blue-900">Carton</option>
+                  <option value="substitution" className="bg-blue-900">Changement</option>
+                  <option value="chance" className="bg-blue-900">Occasion</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Joueur"
+                  value={liveEventForm.player}
+                  onChange={handleLiveEventChange('player')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <textarea
+                  placeholder="Detail de l'action"
+                  value={liveEventForm.detail}
+                  onChange={handleLiveEventChange('detail')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[100px]"
+                  required
+                />
+              </div>
+
+              {liveError && <div className="text-sm text-red-300">{liveError}</div>}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors"
+                >
+                  {editingLiveEventIndex !== null ? 'Mettre a jour' : 'Ajouter'}
+                </button>
+                {editingLiveEventIndex !== null && (
+                  <button
+                    type="button"
+                    onClick={cancelLiveEventEdit}
+                    className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={saveLiveTimeline}
+                  disabled={liveSaving}
+                  className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-60"
+                >
+                  {liveSaving ? 'Sauvegarde...' : 'Sauvegarder la timeline'}
+                </button>
+              </div>
+            </form>
+          </FadeIn>
+
+          <div className="space-y-4">
+            <FadeIn delay={0.4}>
+              <div className="glass rounded-lg p-6">
+                <div className="text-lg font-semibold text-white mb-4">Timeline live</div>
+                {liveLoading && <div className="text-gray-300">Chargement...</div>}
+                {!liveLoading && sortedLiveEvents.length === 0 && (
+                  <div className="text-gray-300">Aucun evenement pour le moment.</div>
+                )}
+                <div className="space-y-4">
+                  {sortedLiveEvents.map(({ eventItem, index }) => (
+                    <ScaleIn key={`${eventItem.minute}-${eventItem.player}-${index}`} delay={0.5 + index * 0.05}>
+                      <div className="rounded-lg border border-white/10 p-4 flex gap-4 items-center">
+                        <div className="text-white font-semibold w-12 text-center">{eventItem.minute}&apos;</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold truncate">{eventItem.player}</div>
+                          <div className="text-sm text-gray-400">
+                            {eventItem.team} · {eventItem.type}
+                          </div>
+                          <div className="text-sm text-gray-400 truncate">{eventItem.detail}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startLiveEventEdit(eventItem, index)}
+                            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteLiveEvent(index)}
+                            className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </ScaleIn>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <form onSubmit={handlePlayerSubmit} className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">
+                {editingPlayerId ? 'Modifier un joueur' : 'Nouveau joueur'}
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Nom du joueur"
+                  value={playerForm.name}
+                  onChange={handlePlayerChange('name')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Poste"
+                  value={playerForm.position}
+                  onChange={handlePlayerChange('position')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <select
+                  value={playerForm.group}
+                  onChange={handlePlayerChange('group')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  <option value="goalkeeper" className="bg-blue-900">Gardien</option>
+                  <option value="defender" className="bg-blue-900">Defenseur</option>
+                  <option value="midfielder" className="bg-blue-900">Milieu</option>
+                  <option value="forward" className="bg-blue-900">Attaquant</option>
+                </select>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Numero"
+                  value={playerForm.number}
+                  onChange={handlePlayerChange('number')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Nationalite"
+                  value={playerForm.nationality}
+                  onChange={handlePlayerChange('nationality')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Age"
+                  value={playerForm.age}
+                  onChange={handlePlayerChange('age')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="url"
+                  placeholder="URL photo"
+                  value={playerForm.image}
+                  onChange={handlePlayerChange('image')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+
+              <div className="rounded-lg overflow-hidden border border-white/10">
+                <img src={previewPlayerImage} alt="Preview joueur" className="h-40 w-full object-cover" />
+              </div>
+
+              {playerError && <div className="text-sm text-red-300">{playerError}</div>}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={playerSaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {playerSaving ? 'Sauvegarde...' : editingPlayerId ? 'Mettre a jour' : 'Ajouter'}
+                </button>
+                {editingPlayerId && (
+                  <button
+                    type="button"
+                    onClick={cancelPlayerEdit}
+                    className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                )}
+              </div>
+            </form>
+          </FadeIn>
+
+          <div className="space-y-4">
+            <FadeIn delay={0.4}>
+              <div className="glass rounded-lg p-6">
+                <div className="text-lg font-semibold text-white mb-4">Effectif</div>
+                {squadLoading && <div className="text-gray-300">Chargement...</div>}
+                {!squadLoading && sortedPlayers.length === 0 && (
+                  <div className="text-gray-300">Aucun joueur pour le moment.</div>
+                )}
+                <div className="space-y-4">
+                  {sortedPlayers.map((player, index) => (
+                    <ScaleIn key={player.id} delay={0.5 + index * 0.05}>
+                      <div className="rounded-lg border border-white/10 p-4 flex gap-4 items-center">
+                        <img
+                          src={player.image || '/api/placeholder/300/400'}
+                          alt={player.name}
+                          className="h-16 w-12 object-cover rounded-md"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold truncate">#{player.number} {player.name}</div>
+                          <div className="text-sm text-gray-400">{player.position} · {player.nationality}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startPlayerEdit(player)}
+                            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deletePlayer(player.id)}
+                            className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </ScaleIn>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <form onSubmit={handleStaffSubmit} className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">
+                {editingStaffId ? 'Modifier un membre du staff' : 'Nouveau membre du staff'}
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Nom"
+                  value={staffForm.name}
+                  onChange={handleStaffChange('name')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Role"
+                  value={staffForm.role}
+                  onChange={handleStaffChange('role')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Nationalite"
+                  value={staffForm.nationality}
+                  onChange={handleStaffChange('nationality')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+                <input
+                  type="url"
+                  placeholder="URL photo"
+                  value={staffForm.image}
+                  onChange={handleStaffChange('image')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+
+              <div className="rounded-lg overflow-hidden border border-white/10">
+                <img src={previewStaffImage} alt="Preview staff" className="h-40 w-full object-cover" />
+              </div>
+
+              {staffError && <div className="text-sm text-red-300">{staffError}</div>}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={staffSaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {staffSaving ? 'Sauvegarde...' : editingStaffId ? 'Mettre a jour' : 'Ajouter'}
+                </button>
+                {editingStaffId && (
+                  <button
+                    type="button"
+                    onClick={cancelStaffEdit}
+                    className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                )}
+              </div>
+            </form>
+          </FadeIn>
+
+          <div className="space-y-4">
+            <FadeIn delay={0.4}>
+              <div className="glass rounded-lg p-6">
+                <div className="text-lg font-semibold text-white mb-4">Staff</div>
+                {squadLoading && <div className="text-gray-300">Chargement...</div>}
+                {!squadLoading && sortedStaff.length === 0 && (
+                  <div className="text-gray-300">Aucun membre du staff pour le moment.</div>
+                )}
+                <div className="space-y-4">
+                  {sortedStaff.map((member, index) => (
+                    <ScaleIn key={member.id} delay={0.5 + index * 0.05}>
+                      <div className="rounded-lg border border-white/10 p-4 flex gap-4 items-center">
+                        <img
+                          src={member.image || '/api/placeholder/300/400'}
+                          alt={member.name}
+                          className="h-16 w-12 object-cover rounded-md"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold truncate">{member.name}</div>
+                          <div className="text-sm text-gray-400">{member.role} · {member.nationality}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startStaffEdit(member)}
+                            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteStaff(member.id)}
+                            className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </ScaleIn>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
