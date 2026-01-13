@@ -54,7 +54,7 @@ export async function readLiveMatch(): Promise<LiveMatchData | null> {
   if (!record) {
     return null;
   }
-  return record.payload as LiveMatchData;
+  return record.payload as unknown as LiveMatchData;
 }
 
 export async function writeLiveMatch(data: LiveMatchData): Promise<void> {
