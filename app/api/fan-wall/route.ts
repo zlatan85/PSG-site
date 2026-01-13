@@ -30,7 +30,9 @@ export async function PUT(request: Request) {
       time: isNonEmptyString(post.time) ? post.time.trim() : '',
       approved: typeof post.approved === 'boolean' ? post.approved : true,
     }))
-    .filter((post) => isNonEmptyString(post.name) && isNonEmptyString(post.message));
+    .filter((post: { name: string; message: string }) =>
+      isNonEmptyString(post.name) && isNonEmptyString(post.message)
+    );
 
   await writeFanWall(nextPosts);
   return NextResponse.json(nextPosts);
