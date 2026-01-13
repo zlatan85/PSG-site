@@ -38,13 +38,20 @@ export async function PUT(request: Request) {
       player: isNonEmptyString(event.player) ? event.player.trim() : '',
       detail: isNonEmptyString(event.detail) ? event.detail.trim() : '',
     }))
-    .filter((event) =>
-      Number.isFinite(event.minute) &&
-      event.minute >= 0 &&
-      isNonEmptyString(event.team) &&
-      isValidEventType(event.type) &&
-      isNonEmptyString(event.player) &&
-      isNonEmptyString(event.detail)
+    .filter(
+      (event: {
+        minute: number;
+        team: string;
+        type: string;
+        player: string;
+        detail: string;
+      }) =>
+        Number.isFinite(event.minute) &&
+        event.minute >= 0 &&
+        isNonEmptyString(event.team) &&
+        isValidEventType(event.type) &&
+        isNonEmptyString(event.player) &&
+        isNonEmptyString(event.detail)
     )
     .map((event) => ({ ...event, type: event.type as 'goal' | 'card' | 'substitution' | 'chance' }));
 
