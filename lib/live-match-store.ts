@@ -59,7 +59,7 @@ export async function readLiveMatch(): Promise<LiveMatchData | null> {
 }
 
 export async function writeLiveMatch(data: LiveMatchData): Promise<void> {
-  const payload = data as Prisma.InputJsonValue;
+  const payload = data as unknown as Prisma.InputJsonValue;
   await prisma.liveMatch.upsert({
     where: { id: 1 },
     update: { payload },
