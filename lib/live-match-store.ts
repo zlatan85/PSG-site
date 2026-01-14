@@ -1,4 +1,5 @@
 import { prisma } from './db';
+import { Prisma } from '@prisma/client';
 
 export interface LiveMatchTeamStats {
   name: string;
@@ -58,9 +59,10 @@ export async function readLiveMatch(): Promise<LiveMatchData | null> {
 }
 
 export async function writeLiveMatch(data: LiveMatchData): Promise<void> {
+  const payload = data as Prisma.InputJsonValue;
   await prisma.liveMatch.upsert({
     where: { id: 1 },
-    update: { payload: data },
-    create: { id: 1, payload: data },
+    update: { payload },
+    create: { id: 1, payload },
   });
 }
