@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from './db';
 
 export interface FooterSettings {
@@ -25,13 +26,14 @@ export async function readFooterSettings(): Promise<FooterSettings | null> {
 }
 
 export async function writeFooterSettings(settings: FooterSettings): Promise<void> {
+  const payload = settings as unknown as Prisma.InputJsonValue;
   const existing = await prisma.footerSettings.findFirst();
   if (existing) {
     await prisma.footerSettings.update({
       where: { id: existing.id },
-      data: { payload: settings },
+      data: { payload },
     });
     return;
   }
-  await prisma.footerSettings.create({ data: { payload: settings } });
+  await prisma.footerSettings.create({ data: { payload } });
 }

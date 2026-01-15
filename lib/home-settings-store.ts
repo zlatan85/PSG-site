@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from './db';
 
 export interface HomeSettings {
@@ -47,13 +48,14 @@ export async function readHomeSettings(): Promise<HomeSettings | null> {
 }
 
 export async function writeHomeSettings(settings: HomeSettings): Promise<void> {
+  const payload = settings as unknown as Prisma.InputJsonValue;
   const existing = await prisma.homeSettings.findFirst();
   if (existing) {
     await prisma.homeSettings.update({
       where: { id: existing.id },
-      data: { payload: settings },
+      data: { payload },
     });
     return;
   }
-  await prisma.homeSettings.create({ data: { payload: settings } });
+  await prisma.homeSettings.create({ data: { payload } });
 }
