@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { ReactNode } from 'react';
-import { notFound } from 'next/navigation';
 import { FadeIn } from '../../../components/MotionWrapper';
 import { readNews } from '../../../lib/news-store';
 
@@ -129,10 +128,54 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
 
 export default async function NewsDetailPage({ params }: NewsPageProps) {
   const news = await readNews();
-  const article = news.find((item) => String(item.id) === params.id);
+  const decodedId = decodeURIComponent(params.id).trim();
+  const idMatch = decodedId.match(/\d+/);
+  const numericId = idMatch ? Number(idMatch[0]) : Number(decodedId);
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+
+  const normalizedId = decodedId.toLowerCase();
+  const numericArticle = Number.isFinite(numericId)
+    ? news.find((item) => Number(item.id) === numericId)
+    : undefined;
+  const article =
+    news.find((item) => String(item.id) === decodedId) ??
+    numericArticle ??
+    news.find((item) => slugify(item.title) === normalizedId);
 
   if (!article) {
-    notFound();
+    const fallback = news.slice(0, 3);
+    return (
+      <div className="min-h-screen px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl space-y-6 text-center">
+          <h1 className="text-3xl font-bold text-white">Article introuvable</h1>
+          <p className="text-gray-300">On n&apos;a pas trouve cette actu. Voici les plus recentes.</p>
+          <div className="grid gap-4 sm:grid-cols-3 text-left">
+            {fallback.map((item) => (
+              <Link
+                key={item.id}
+                href={`/news/${item.id}`}
+                className="glass rounded-lg p-4 hover:bg-white/10 transition-colors"
+              >
+                <div className="text-sm text-gray-400">{item.date}</div>
+                <div className="text-white font-semibold line-clamp-2">{item.title}</div>
+              </Link>
+            ))}
+          </div>
+          <Link
+            href="/news"
+            className="inline-flex items-center rounded-lg bg-white/10 px-6 py-3 text-sm font-semibold text-white hover:bg-white/20 transition-colors"
+          >
+            Retour aux actualites
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const content = article.content || article.excerpt;

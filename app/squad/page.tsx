@@ -88,7 +88,7 @@ export default async function SquadPage() {
                         <img
                           src={normalizeImage(player.image)}
                           alt={player.name}
-                          className="h-60 w-full object-cover"
+                          className="h-44 w-full object-cover object-center"
                         />
                         <div className="p-5">
                           <div className="flex items-center justify-between mb-2">
@@ -121,7 +121,7 @@ export default async function SquadPage() {
                     <img
                       src={normalizeImage(member.image)}
                       alt={member.name}
-                      className="h-60 w-full object-cover"
+                      className="h-44 w-full object-cover object-center"
                     />
                     <div className="p-5">
                       <h3 className="text-lg font-semibold text-white">{member.name}</h3>

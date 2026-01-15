@@ -62,6 +62,35 @@ interface FanWallPost {
   approved: boolean;
 }
 
+interface HomeSettings {
+  heroLabel: string;
+  heroTitle: string;
+  heroExcerpt: string;
+  heroImage: string;
+  heroPrimaryLabel: string;
+  heroPrimaryHref: string;
+  heroSecondaryLabel: string;
+  heroSecondaryHref: string;
+  matchdayTitle: string;
+  matchdaySubtitle: string;
+  fanZoneTitle: string;
+  fanZoneSubtitle: string;
+  alertsTitle: string;
+  alertsSubtitle: string;
+  supporterHubTitle: string;
+  supporterHubSubtitle: string;
+  spotlightLabel: string;
+}
+
+interface FooterSettings {
+  brandTitle: string;
+  brandText: string;
+  alertsTitle: string;
+  alertsText: string;
+  alertsCtaLabel: string;
+  bottomText: string;
+}
+
 const emptyForm = {
   title: '',
   excerpt: '',
@@ -116,6 +145,35 @@ const emptyFanWallForm: FanWallPost = {
   approved: true,
 };
 
+const defaultHomeSettings: HomeSettings = {
+  heroLabel: 'La une du jour',
+  heroTitle: 'PSG Newsroom',
+  heroExcerpt: 'Toutes les actus, les moments forts et les insights pour vivre Paris a fond.',
+  heroImage: '/api/placeholder/1600/900',
+  heroPrimaryLabel: "Lire l'article",
+  heroPrimaryHref: '/news',
+  heroSecondaryLabel: 'Toutes les actus',
+  heroSecondaryHref: '/news',
+  matchdayTitle: 'Matchday Spotlight',
+  matchdaySubtitle: 'Suis le live, la fan zone et les moments forts du match.',
+  fanZoneTitle: 'Le coeur du supporter',
+  fanZoneSubtitle: 'Mur des supporters, pronostics, highlights et challenges.',
+  alertsTitle: 'Alertes Matchday',
+  alertsSubtitle: 'Recois les moments forts, la compo officielle et les buts en temps reel.',
+  supporterHubTitle: 'Supporter Hub',
+  supporterHubSubtitle: "Tout ce qu'il faut pour vivre PSG a fond.",
+  spotlightLabel: 'Player Spotlight',
+};
+
+const defaultFooterSettings: FooterSettings = {
+  brandTitle: 'PSG News',
+  brandText: 'Le hub des supporters: actus, live, fan zone et moments forts du PSG.',
+  alertsTitle: 'Matchday Alertes',
+  alertsText: 'Recois les moments chauds du match et les annonces officielles.',
+  alertsCtaLabel: "M'alerter",
+  bottomText: '© 2026 PSG News. Tous droits reserves.',
+};
+
 export default function AdminPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -153,6 +211,14 @@ export default function AdminPage() {
   const [fanWallLoading, setFanWallLoading] = useState(true);
   const [fanWallSaving, setFanWallSaving] = useState(false);
   const [fanWallError, setFanWallError] = useState<string | null>(null);
+  const [homeSettings, setHomeSettings] = useState<HomeSettings>(defaultHomeSettings);
+  const [homeLoading, setHomeLoading] = useState(true);
+  const [homeSaving, setHomeSaving] = useState(false);
+  const [homeError, setHomeError] = useState<string | null>(null);
+  const [footerSettings, setFooterSettings] = useState<FooterSettings>(defaultFooterSettings);
+  const [footerLoading, setFooterLoading] = useState(true);
+  const [footerSaving, setFooterSaving] = useState(false);
+  const [footerError, setFooterError] = useState<string | null>(null);
 
   const sortedArticles = useMemo(
     () => [...articles].sort((a, b) => b.date.localeCompare(a.date)),
@@ -262,12 +328,42 @@ export default function AdminPage() {
     }
   };
 
+  const loadHomeSettings = async () => {
+    try {
+      setHomeLoading(true);
+      const response = await fetch('/api/home-settings');
+      const data = await response.json();
+      setHomeSettings({ ...defaultHomeSettings, ...(data || {}) });
+    } catch (loadError) {
+      console.error('Failed to load home settings:', loadError);
+      setHomeError('Impossible de charger la home.');
+    } finally {
+      setHomeLoading(false);
+    }
+  };
+
+  const loadFooterSettings = async () => {
+    try {
+      setFooterLoading(true);
+      const response = await fetch('/api/footer-settings');
+      const data = await response.json();
+      setFooterSettings({ ...defaultFooterSettings, ...(data || {}) });
+    } catch (loadError) {
+      console.error('Failed to load footer settings:', loadError);
+      setFooterError('Impossible de charger le footer.');
+    } finally {
+      setFooterLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadArticles();
     loadMatches();
     loadSquad();
     loadLiveMatch();
     loadFanWall();
+    loadHomeSettings();
+    loadFooterSettings();
   }, []);
 
   const handleChange = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -320,6 +416,18 @@ export default function AdminPage() {
       ? event.target.checked
       : event.target.value;
     setFanWallForm((current) => ({ ...current, [field]: value } as FanWallPost));
+  };
+
+  const handleHomeSettingsChange = (field: keyof HomeSettings) => (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setHomeSettings((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const handleFooterSettingsChange = (field: keyof FooterSettings) => (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFooterSettings((current) => ({ ...current, [field]: event.target.value }));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -514,6 +622,56 @@ export default function AdminPage() {
 
     setFanWallForm(emptyFanWallForm);
     setEditingFanWallId(null);
+  };
+
+  const saveHomeSettings = async () => {
+    setHomeError(null);
+    setHomeSaving(true);
+
+    try {
+      const response = await fetch('/api/home-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(homeSettings),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setHomeSettings({ ...defaultHomeSettings, ...(data || {}) });
+    } catch (saveError) {
+      console.error('Failed to save home settings:', saveError);
+      setHomeError('Impossible de sauvegarder la home.');
+    } finally {
+      setHomeSaving(false);
+    }
+  };
+
+  const saveFooterSettings = async () => {
+    setFooterError(null);
+    setFooterSaving(true);
+
+    try {
+      const response = await fetch('/api/footer-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(footerSettings),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setFooterSettings({ ...defaultFooterSettings, ...(data || {}) });
+    } catch (saveError) {
+      console.error('Failed to save footer settings:', saveError);
+      setFooterError('Impossible de sauvegarder le footer.');
+    } finally {
+      setFooterSaving(false);
+    }
   };
 
   const startEdit = (article: NewsArticle) => {
@@ -972,6 +1130,265 @@ export default function AdminPage() {
               </div>
             </FadeIn>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">Home - Contenu principal</div>
+              {homeLoading ? (
+                <div className="text-gray-300">Chargement...</div>
+              ) : (
+                <>
+                  <div className="grid gap-3">
+                    <input
+                      type="text"
+                      placeholder="Label hero"
+                      value={homeSettings.heroLabel}
+                      onChange={handleHomeSettingsChange('heroLabel')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Titre hero"
+                      value={homeSettings.heroTitle}
+                      onChange={handleHomeSettingsChange('heroTitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Texte hero"
+                      value={homeSettings.heroExcerpt}
+                      onChange={handleHomeSettingsChange('heroExcerpt')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[120px]"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Image hero (URL)"
+                      value={homeSettings.heroImage}
+                      onChange={handleHomeSettingsChange('heroImage')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="CTA principal"
+                      value={homeSettings.heroPrimaryLabel}
+                      onChange={handleHomeSettingsChange('heroPrimaryLabel')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Lien CTA principal"
+                      value={homeSettings.heroPrimaryHref}
+                      onChange={handleHomeSettingsChange('heroPrimaryHref')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="CTA secondaire"
+                      value={homeSettings.heroSecondaryLabel}
+                      onChange={handleHomeSettingsChange('heroSecondaryLabel')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Lien CTA secondaire"
+                      value={homeSettings.heroSecondaryHref}
+                      onChange={handleHomeSettingsChange('heroSecondaryHref')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <input
+                      type="text"
+                      placeholder="Titre Matchday"
+                      value={homeSettings.matchdayTitle}
+                      onChange={handleHomeSettingsChange('matchdayTitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Sous-titre Matchday"
+                      value={homeSettings.matchdaySubtitle}
+                      onChange={handleHomeSettingsChange('matchdaySubtitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[80px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Titre Fan Zone"
+                      value={homeSettings.fanZoneTitle}
+                      onChange={handleHomeSettingsChange('fanZoneTitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Sous-titre Fan Zone"
+                      value={homeSettings.fanZoneSubtitle}
+                      onChange={handleHomeSettingsChange('fanZoneSubtitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[80px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Titre Alertes"
+                      value={homeSettings.alertsTitle}
+                      onChange={handleHomeSettingsChange('alertsTitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Sous-titre Alertes"
+                      value={homeSettings.alertsSubtitle}
+                      onChange={handleHomeSettingsChange('alertsSubtitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[80px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Titre Supporter Hub"
+                      value={homeSettings.supporterHubTitle}
+                      onChange={handleHomeSettingsChange('supporterHubTitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Sous-titre Supporter Hub"
+                      value={homeSettings.supporterHubSubtitle}
+                      onChange={handleHomeSettingsChange('supporterHubSubtitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Label Player Spotlight"
+                      value={homeSettings.spotlightLabel}
+                      onChange={handleHomeSettingsChange('spotlightLabel')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  {homeError && <div className="text-sm text-red-300">{homeError}</div>}
+
+                  <button
+                    type="button"
+                    onClick={saveHomeSettings}
+                    disabled={homeSaving}
+                    className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                  >
+                    {homeSaving ? 'Sauvegarde...' : 'Sauvegarder la home'}
+                  </button>
+                </>
+              )}
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.4}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">Apercu Home</div>
+              <div className="rounded-lg overflow-hidden border border-white/10">
+                <img
+                  src={homeSettings.heroImage || '/api/placeholder/1200/700'}
+                  alt="Hero preview"
+                  className="h-40 w-full object-cover"
+                />
+              </div>
+              <div>
+                <div className="text-xs text-gray-400">{homeSettings.heroLabel}</div>
+                <div className="text-lg text-white font-semibold">{homeSettings.heroTitle}</div>
+                <p className="text-sm text-gray-300">{homeSettings.heroExcerpt}</p>
+              </div>
+              <div className="rounded-lg bg-white/5 p-4 text-sm text-gray-300">
+                <div className="text-white font-semibold">{homeSettings.matchdayTitle}</div>
+                <p>{homeSettings.matchdaySubtitle}</p>
+              </div>
+              <div className="rounded-lg bg-white/5 p-4 text-sm text-gray-300">
+                <div className="text-white font-semibold">{homeSettings.fanZoneTitle}</div>
+                <p>{homeSettings.fanZoneSubtitle}</p>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">Footer - Contenu</div>
+              {footerLoading ? (
+                <div className="text-gray-300">Chargement...</div>
+              ) : (
+                <>
+                  <div className="grid gap-3">
+                    <input
+                      type="text"
+                      placeholder="Titre"
+                      value={footerSettings.brandTitle}
+                      onChange={handleFooterSettingsChange('brandTitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Texte"
+                      value={footerSettings.brandText}
+                      onChange={handleFooterSettingsChange('brandText')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[120px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Titre Alertes"
+                      value={footerSettings.alertsTitle}
+                      onChange={handleFooterSettingsChange('alertsTitle')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Texte Alertes"
+                      value={footerSettings.alertsText}
+                      onChange={handleFooterSettingsChange('alertsText')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[100px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Label bouton Alertes"
+                      value={footerSettings.alertsCtaLabel}
+                      onChange={handleFooterSettingsChange('alertsCtaLabel')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Texte bas de page"
+                      value={footerSettings.bottomText}
+                      onChange={handleFooterSettingsChange('bottomText')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  {footerError && <div className="text-sm text-red-300">{footerError}</div>}
+
+                  <button
+                    type="button"
+                    onClick={saveFooterSettings}
+                    disabled={footerSaving}
+                    className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                  >
+                    {footerSaving ? 'Sauvegarde...' : 'Sauvegarder le footer'}
+                  </button>
+                </>
+              )}
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.4}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">Apercu Footer</div>
+              <div className="rounded-lg bg-white/5 p-4">
+                <div className="text-white font-semibold">{footerSettings.brandTitle}</div>
+                <p className="text-sm text-gray-300">{footerSettings.brandText}</p>
+              </div>
+              <div className="rounded-lg bg-white/5 p-4 text-sm text-gray-300">
+                <div className="text-white font-semibold">{footerSettings.alertsTitle}</div>
+                <p>{footerSettings.alertsText}</p>
+                <span className="inline-flex mt-2 rounded-full bg-white/10 px-3 py-1 text-xs text-gray-200">
+                  {footerSettings.alertsCtaLabel}
+                </span>
+              </div>
+              <div className="text-xs text-gray-500">{footerSettings.bottomText}</div>
+            </div>
+          </FadeIn>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">

@@ -5,6 +5,7 @@ import { readMatches } from '../lib/matches-store';
 import { readLiveMatch } from '../lib/live-match-store';
 import { readFanWall } from '../lib/fan-wall-store';
 import { readSquad } from '../lib/squad-store';
+import { defaultHomeSettings, readHomeSettings } from '../lib/home-settings-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,7 @@ export default async function Home() {
   const liveMatch = await readLiveMatch();
   const fanWallPosts = (await readFanWall()).filter((post) => post.approved);
   const squad = await readSquad();
+  const homeSettings = (await readHomeSettings()) ?? defaultHomeSettings;
   const sortedNews = sortByDateDesc(news);
   const latestArticle = sortedNews[0];
   const latestNews = sortedNews.slice(0, 3);
@@ -40,19 +42,19 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Article */}
-      <section className="relative min-h-[70vh] px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+      <section className="relative min-h-[60vh] px-4 pb-16 pt-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <FadeIn delay={0.2}>
             <div className="relative overflow-hidden rounded-3xl border border-white/10">
               <div className="absolute left-6 top-6 z-10 rounded-full bg-white/10 px-4 py-2 text-sm text-white">
-                La une du jour
+                {homeSettings.heroLabel}
               </div>
               {latestArticle ? (
                 <>
                   <img
-                    src={latestArticle.image || '/api/placeholder/1600/900'}
+                    src={homeSettings.heroImage || latestArticle.image || '/api/placeholder/1600/900'}
                     alt={latestArticle.title}
-                    className="h-[70vh] w-full object-cover"
+                    className="h-[60vh] w-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-8 sm:p-12">
@@ -63,29 +65,29 @@ export default async function Home() {
                       <span className="text-gray-300">{latestArticle.date}</span>
                     </div>
                     <h1 className="font-display text-5xl uppercase text-white sm:text-6xl lg:text-7xl">
-                      {latestArticle.title}
+                      {homeSettings.heroTitle || latestArticle.title}
                     </h1>
                     <p className="mt-4 max-w-2xl text-lg text-gray-200 line-clamp-3">
-                      {latestArticle.excerpt}
+                      {homeSettings.heroExcerpt || latestArticle.excerpt}
                     </p>
                     <div className="mt-6 flex flex-wrap gap-4">
                       <Link
-                        href={`/news/${latestArticle.id}`}
+                        href={homeSettings.heroPrimaryHref || `/news/${latestArticle.id}`}
                         className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
                       >
-                        Lire l&apos;article
+                        {homeSettings.heroPrimaryLabel}
                       </Link>
                       <Link
-                        href="/news"
+                        href={homeSettings.heroSecondaryHref}
                         className="rounded-lg bg-white/10 px-6 py-3 text-sm font-semibold text-white hover:bg-white/20 transition-colors"
                       >
-                        Toutes les actus
+                        {homeSettings.heroSecondaryLabel}
                       </Link>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="h-[70vh] flex items-center justify-center text-gray-300">
+                <div className="h-[60vh] flex items-center justify-center text-gray-300">
                   Aucun article disponible.
                 </div>
               )}
@@ -120,10 +122,8 @@ export default async function Home() {
                       {nextMatch?.competition ?? 'Paris Saint-Germain'}
                     </span>
                   </div>
-                  <h2 className="text-2xl font-semibold text-white">Matchday Spotlight</h2>
-                  <p className="text-gray-300 max-w-xl">
-                    Suis le live, la fan zone et les moments forts du match.
-                  </p>
+                  <h2 className="text-2xl font-semibold text-white">{homeSettings.matchdayTitle}</h2>
+                  <p className="text-gray-300 max-w-xl">{homeSettings.matchdaySubtitle}</p>
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href={liveMatch?.status === 'live' ? '/live' : '/calendar'}
@@ -176,10 +176,8 @@ export default async function Home() {
             <div className="glass rounded-3xl p-6 sm:p-8">
               <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                 <div className="space-y-4">
-                  <h2 className="text-2xl font-semibold text-white">Alertes Matchday</h2>
-                  <p className="text-gray-300 max-w-xl">
-                    Recois les moments forts, la compo officielle et les buts en temps reel.
-                  </p>
+                  <h2 className="text-2xl font-semibold text-white">{homeSettings.alertsTitle}</h2>
+                  <p className="text-gray-300 max-w-xl">{homeSettings.alertsSubtitle}</p>
                   <div className="flex flex-wrap gap-3">
                     {['Coup d\'envoi', 'Buts', 'Stats live', 'Compo officielle'].map((label) => (
                       <span
@@ -230,10 +228,8 @@ export default async function Home() {
                   <p className="inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-1 text-sm font-semibold text-red-200">
                     Fan Zone
                   </p>
-                  <h2 className="text-3xl font-bold text-white">Le coeur du supporter</h2>
-                  <p className="text-gray-300 max-w-xl">
-                    Mur des supporters, pronostics en direct, highlights et challenges pour vivre le match ensemble.
-                  </p>
+                  <h2 className="text-3xl font-bold text-white">{homeSettings.fanZoneTitle}</h2>
+                  <p className="text-gray-300 max-w-xl">{homeSettings.fanZoneSubtitle}</p>
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href="/fan-zone"
@@ -302,8 +298,8 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl">
           <FadeIn delay={0.3}>
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white">Supporter Hub</h2>
-              <p className="mt-3 text-gray-300">Tout ce qu'il faut pour vivre PSG a fond.</p>
+              <h2 className="text-3xl font-bold text-white">{homeSettings.supporterHubTitle}</h2>
+              <p className="mt-3 text-gray-300">{homeSettings.supporterHubSubtitle}</p>
             </div>
           </FadeIn>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -337,7 +333,7 @@ export default async function Home() {
               <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
                 <div className="space-y-4">
                   <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-sm text-gray-200">
-                    Player Spotlight
+                    {homeSettings.spotlightLabel}
                   </p>
                   <h2 className="text-3xl font-bold text-white">
                     {featuredPlayer ? featuredPlayer.name : 'Le joueur du moment'}
@@ -380,7 +376,7 @@ export default async function Home() {
                     <img
                       src={featuredPlayer?.image || '/api/placeholder/800/900'}
                       alt={featuredPlayer?.name || 'Joueur PSG'}
-                      className="h-[360px] w-full object-cover sm:h-[420px]"
+                      className="h-[320px] w-full object-cover sm:h-[380px]"
                     />
                   </div>
                 </div>
@@ -407,7 +403,7 @@ export default async function Home() {
                   <img
                     src={news.image || '/api/placeholder/600/400'}
                     alt={news.title}
-                    className="h-48 w-full object-cover"
+                    className="h-32 w-full object-cover object-center"
                   />
                   <div className="p-6 flex flex-col flex-1">
                     <h3 className="text-xl font-semibold text-white mb-2 line-clamp-2">{news.title}</h3>

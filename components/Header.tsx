@@ -21,12 +21,12 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-gradient-to-r from-blue-900 via-blue-800 to-red-900 backdrop-blur-md bg-opacity-90 border-b border-white/20">
+    <header className="fixed top-0 w-full z-50 border-b border-white/10 bg-[#0b1020]/85 backdrop-blur-lg">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
             <div className="flex flex-shrink-0 items-center">
-              <Link href="/" className="text-white font-bold text-xl">
+              <Link href="/" className="text-white font-bold text-xl tracking-wide">
                 PSG News
               </Link>
             </div>
@@ -36,7 +36,7 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-white hover:border-white hover:text-gray-200 transition-colors"
+                className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-200 hover:border-red-400 hover:text-white transition-colors"
               >
                 {item.name}
               </Link>
@@ -64,13 +64,13 @@ export default function Header() {
 
       {isOpen && (
         <FadeIn>
-          <div className="md:hidden">
+          <div className="md:hidden bg-[#0b1020]/95 backdrop-blur-lg">
             <div className="space-y-1 pb-3 pt-2">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-white hover:border-white hover:bg-white/10 hover:text-gray-200"
+                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-200 hover:border-red-400 hover:bg-white/10 hover:text-white"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}

@@ -83,3 +83,13 @@ model LiveMatch {
   id      Int  @id
   payload Json
 }
+
+model HomeSettings {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}
+
+model FooterSettings {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}
