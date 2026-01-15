@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "Stay updated with the latest Paris Saint-Germain news, match results, player updates, and more.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{
