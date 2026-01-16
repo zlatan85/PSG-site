@@ -35,6 +35,17 @@ export default async function Home() {
   const kickoffTimeLabel = nextMatchDate
     ? nextMatchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
     : '';
+  const matchdayStatusLabel = homeSettings.matchdayStatusLabel?.trim();
+  const matchdayCompetition =
+    homeSettings.matchdayCompetition?.trim() || nextMatch?.competition || 'Paris Saint-Germain';
+  const matchdayHome = homeSettings.matchdayHomeTeam?.trim() || nextMatch?.home || 'PSG';
+  const matchdayAway = homeSettings.matchdayAwayTeam?.trim() || nextMatch?.away || 'Adversaire';
+  const matchdayStadium = homeSettings.matchdayStadium?.trim() || nextMatch?.stadium || 'Parc des Princes';
+  const matchdayDate = homeSettings.matchdayDate?.trim() || kickoffDateLabel;
+  const matchdayTime = homeSettings.matchdayTime?.trim() || kickoffTimeLabel;
+  const matchdayScore =
+    homeSettings.matchdayScore?.trim() ||
+    (liveMatch?.status === 'live' ? `${liveMatch.home.score} - ${liveMatch.away.score}` : '00 - 00');
   const fanWallTeaser = fanWallPosts.slice(0, 6);
   const featuredPlayer =
     squad.players.find((player) => player.group === 'forward') ?? squad.players[0];
@@ -109,7 +120,9 @@ export default async function Home() {
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center gap-3 text-sm text-gray-200">
                     <span className="inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-1 text-sm font-semibold text-red-200">
-                      {liveMatch?.status === 'live' ? (
+                      {matchdayStatusLabel ? (
+                        <>{matchdayStatusLabel}</>
+                      ) : liveMatch?.status === 'live' ? (
                         <>
                           <span className="inline-flex h-2 w-2 rounded-full bg-red-400 matchday-blink" />
                           LIVE EN COURS
@@ -118,9 +131,7 @@ export default async function Home() {
                         <>J-{daysToMatch ?? '--'} AVANT MATCH</>
                       )}
                     </span>
-                    <span className="text-gray-300">
-                      {nextMatch?.competition ?? 'Paris Saint-Germain'}
-                    </span>
+                    <span className="text-gray-300">{matchdayCompetition}</span>
                   </div>
                   <h2 className="text-2xl font-semibold text-white">{homeSettings.matchdayTitle}</h2>
                   <p className="text-gray-300 max-w-xl">{homeSettings.matchdaySubtitle}</p>
@@ -141,21 +152,21 @@ export default async function Home() {
                 </div>
                 <div className="glass matchday-glow matchday-sweep rounded-2xl p-5 text-sm text-gray-200">
                   <div className="flex items-center justify-between text-sm text-gray-300">
-                    <span>{nextMatch?.competition ?? 'Prochain match'}</span>
-                    <span>{kickoffDateLabel}</span>
+                    <span>{matchdayCompetition || 'Prochain match'}</span>
+                    <span>{matchdayDate}</span>
                   </div>
                   <div className="mt-3 text-center">
                     <div className="text-xl font-semibold text-white">
-                      {nextMatch?.home ?? 'PSG'} vs {nextMatch?.away ?? 'Adversaire'}
+                      {matchdayHome} vs {matchdayAway}
                     </div>
                     <div className="mt-1 text-xs text-gray-400">
-                      {kickoffTimeLabel} · {nextMatch?.stadium ?? 'Parc des Princes'}
+                      {matchdayTime} · {matchdayStadium}
                     </div>
                   </div>
                   <div className="mt-4 flex items-center justify-center gap-6">
                     <div className="text-center">
                       <div className="text-2xl font-semibold text-white matchday-float">
-                        {liveMatch?.status === 'live' ? `${liveMatch.home.score} - ${liveMatch.away.score}` : '00 - 00'}
+                        {matchdayScore}
                       </div>
                       <div className="text-xs text-gray-400">
                         {liveMatch?.status === 'live' ? `LIVE ${liveMatch.minute}'` : 'Kickoff'}

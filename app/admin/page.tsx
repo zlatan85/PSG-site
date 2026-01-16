@@ -73,6 +73,14 @@ interface HomeSettings {
   heroSecondaryHref: string;
   matchdayTitle: string;
   matchdaySubtitle: string;
+  matchdayStatusLabel: string;
+  matchdayCompetition: string;
+  matchdayHomeTeam: string;
+  matchdayAwayTeam: string;
+  matchdayScore: string;
+  matchdayDate: string;
+  matchdayTime: string;
+  matchdayStadium: string;
   fanZoneTitle: string;
   fanZoneSubtitle: string;
   alertsTitle: string;
@@ -156,6 +164,14 @@ const defaultHomeSettings: HomeSettings = {
   heroSecondaryHref: '/news',
   matchdayTitle: 'Matchday Spotlight',
   matchdaySubtitle: 'Suis le live, la fan zone et les moments forts du match.',
+  matchdayStatusLabel: '',
+  matchdayCompetition: '',
+  matchdayHomeTeam: '',
+  matchdayAwayTeam: '',
+  matchdayScore: '',
+  matchdayDate: '',
+  matchdayTime: '',
+  matchdayStadium: '',
   fanZoneTitle: 'Le coeur du supporter',
   fanZoneSubtitle: 'Mur des supporters, pronostics, highlights et challenges.',
   alertsTitle: 'Alertes Matchday',
@@ -1223,6 +1239,73 @@ export default function AdminPage() {
                       onChange={handleHomeSettingsChange('matchdaySubtitle')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[80px]"
                     />
+                    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+                      <div className="text-xs uppercase tracking-widest text-gray-400">
+                        Matchday Spotlight (manuel)
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Badge (ex: LIVE EN COURS)"
+                        value={homeSettings.matchdayStatusLabel}
+                        onChange={handleHomeSettingsChange('matchdayStatusLabel')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <input
+                          type="text"
+                          placeholder="Equipe domicile"
+                          value={homeSettings.matchdayHomeTeam}
+                          onChange={handleHomeSettingsChange('matchdayHomeTeam')}
+                          className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Equipe exterieure"
+                          value={homeSettings.matchdayAwayTeam}
+                          onChange={handleHomeSettingsChange('matchdayAwayTeam')}
+                          className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <input
+                          type="text"
+                          placeholder="Competition"
+                          value={homeSettings.matchdayCompetition}
+                          onChange={handleHomeSettingsChange('matchdayCompetition')}
+                          className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Stade"
+                          value={homeSettings.matchdayStadium}
+                          onChange={handleHomeSettingsChange('matchdayStadium')}
+                          className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <input
+                          type="text"
+                          placeholder="Date (ex: 12 Jan 2026)"
+                          value={homeSettings.matchdayDate}
+                          onChange={handleHomeSettingsChange('matchdayDate')}
+                          className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Heure (ex: 21:00)"
+                          value={homeSettings.matchdayTime}
+                          onChange={handleHomeSettingsChange('matchdayTime')}
+                          className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Score (ex: 2 - 1)"
+                        value={homeSettings.matchdayScore}
+                        onChange={handleHomeSettingsChange('matchdayScore')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    </div>
                     <input
                       type="text"
                       placeholder="Titre Fan Zone"

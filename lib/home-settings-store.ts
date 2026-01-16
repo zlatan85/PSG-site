@@ -12,6 +12,14 @@ export interface HomeSettings {
   heroSecondaryHref: string;
   matchdayTitle: string;
   matchdaySubtitle: string;
+  matchdayStatusLabel: string;
+  matchdayCompetition: string;
+  matchdayHomeTeam: string;
+  matchdayAwayTeam: string;
+  matchdayScore: string;
+  matchdayDate: string;
+  matchdayTime: string;
+  matchdayStadium: string;
   fanZoneTitle: string;
   fanZoneSubtitle: string;
   alertsTitle: string;
@@ -32,6 +40,14 @@ export const defaultHomeSettings: HomeSettings = {
   heroSecondaryHref: '/news',
   matchdayTitle: 'Matchday Spotlight',
   matchdaySubtitle: 'Suis le live, la fan zone et les moments forts du match.',
+  matchdayStatusLabel: '',
+  matchdayCompetition: '',
+  matchdayHomeTeam: '',
+  matchdayAwayTeam: '',
+  matchdayScore: '',
+  matchdayDate: '',
+  matchdayTime: '',
+  matchdayStadium: '',
   fanZoneTitle: 'Le coeur du supporter',
   fanZoneSubtitle: 'Mur des supporters, pronostics, highlights et challenges.',
   alertsTitle: 'Alertes Matchday',
