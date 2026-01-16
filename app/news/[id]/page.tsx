@@ -79,7 +79,7 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
           <img
             src={src}
             alt={alt || 'Illustration'}
-            className="w-full rounded-2xl object-cover shadow-lg"
+            className="w-full max-h-[520px] rounded-2xl object-contain bg-black/40 shadow-lg"
           />
           {caption ? <figcaption className="text-xs text-gray-400">{caption}</figcaption> : null}
         </figure>
@@ -279,7 +279,7 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
               <img
                 src={article.image || '/api/placeholder/1200/700'}
                 alt={article.title}
-                className="w-full h-72 object-cover sm:h-96"
+                className="w-full max-h-[520px] object-contain bg-black/40"
               />
               <div className="p-8 text-gray-200">
                 <div className="space-y-6">

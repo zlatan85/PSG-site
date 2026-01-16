@@ -1039,9 +1039,17 @@ export default function AdminPage() {
                   >
                     Italique
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdown('![Legende](https://exemple.com/image.jpg)')}
+                    className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                  >
+                    Image
+                  </button>
                 </div>
                 <p className="text-xs text-gray-400">
-                  Raccourcis markdown: ## Titre, ### Sous-titre, - Liste, &gt; Citation, **gras**, *italique*.
+                  Raccourcis markdown: ## Titre, ### Sous-titre, - Liste, &gt; Citation, **gras**, *italique*,
+                  ![legende](url "caption").
                 </p>
                 <input
                   type="url"

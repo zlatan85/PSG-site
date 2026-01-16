@@ -373,11 +373,11 @@ export default async function Home() {
                 <div className="relative">
                   <div className="absolute -inset-4 rounded-3xl bg-red-500/10 blur-2xl" />
                   <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                    <img
-                      src={featuredPlayer?.image || '/api/placeholder/800/900'}
-                      alt={featuredPlayer?.name || 'Joueur PSG'}
-                      className="h-[320px] w-full object-cover sm:h-[380px]"
-                    />
+                  <img
+                    src={featuredPlayer?.image || '/api/placeholder/800/900'}
+                    alt={featuredPlayer?.name || 'Joueur PSG'}
+                    className="h-[320px] w-full object-contain bg-black/40 sm:h-[380px]"
+                  />
                   </div>
                 </div>
               </div>
@@ -403,7 +403,7 @@ export default async function Home() {
                   <img
                     src={news.image || '/api/placeholder/600/400'}
                     alt={news.title}
-                    className="h-32 w-full object-cover object-center"
+                    className="h-32 w-full object-contain bg-black/40"
                   />
                   <div className="p-6 flex flex-col flex-1">
                     <h3 className="text-xl font-semibold text-white mb-2 line-clamp-2">{news.title}</h3>

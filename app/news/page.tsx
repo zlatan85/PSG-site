@@ -109,7 +109,7 @@ export default function NewsPage() {
                 <img
                   src={article.image || '/api/placeholder/600/400'}
                   alt={article.title}
-                  className="h-32 w-full object-cover object-center"
+                  className="h-32 w-full object-contain bg-black/40"
                 />
                 <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-center justify-between mb-2">
