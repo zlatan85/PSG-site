@@ -21,6 +21,19 @@ export async function readNews(): Promise<NewsArticle[]> {
   }));
 }
 
+export async function readNewsById(id: number): Promise<NewsArticle | null> {
+  const item = await prisma.newsArticle.findUnique({ where: { id } });
+  if (!item) return null;
+  return {
+    id: item.id,
+    title: item.title,
+    excerpt: item.excerpt,
+    image: item.image,
+    date: item.date,
+    content: item.content ?? undefined,
+  };
+}
+
 export async function writeNews(news: NewsArticle[]): Promise<void> {
   await prisma.newsArticle.deleteMany();
   if (news.length > 0) {

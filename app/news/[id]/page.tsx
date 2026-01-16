@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ReactNode } from 'react';
 import { FadeIn } from '../../../components/MotionWrapper';
-import { readNews } from '../../../lib/news-store';
+import { readNews, readNewsById } from '../../../lib/news-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -127,7 +127,6 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
 };
 
 export default async function NewsDetailPage({ params }: NewsPageProps) {
-  const news = await readNews();
   const decodedId = decodeURIComponent(params.id).trim();
   const idMatch = decodedId.match(/\d+/);
   const numericId = idMatch ? Number(idMatch[0]) : Number(decodedId);
@@ -139,14 +138,15 @@ export default async function NewsDetailPage({ params }: NewsPageProps) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
 
+  let article = Number.isFinite(numericId) ? await readNewsById(numericId) : null;
+  const news = article ? [] : await readNews();
   const normalizedId = decodedId.toLowerCase();
-  const numericArticle = Number.isFinite(numericId)
-    ? news.find((item) => Number(item.id) === numericId)
-    : undefined;
-  const article =
-    news.find((item) => String(item.id) === decodedId) ??
-    numericArticle ??
-    news.find((item) => slugify(item.title) === normalizedId);
+  if (!article) {
+    article =
+      news.find((item) => String(item.id) === decodedId) ??
+      news.find((item) => slugify(item.title) === normalizedId) ??
+      null;
+  }
 
   if (!article) {
     const fallback = news.slice(0, 3);
