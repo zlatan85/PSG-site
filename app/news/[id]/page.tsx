@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { FadeIn } from '../../../components/MotionWrapper';
 
 export const dynamic = 'force-dynamic';
 
 interface NewsPageProps {
-  params: { id: string };
+  params?: { id?: string };
 }
 
 interface NewsArticle {
@@ -136,7 +137,9 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
   return blocks;
 };
 
-export default function NewsDetailPage({ params }: NewsPageProps) {
+export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
+  const routeParams = useParams<{ id?: string }>();
+  const rawId = routeParams?.id ?? pageParams?.id ?? '';
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -161,7 +164,15 @@ export default function NewsDetailPage({ params }: NewsPageProps) {
     load();
   }, []);
 
-  const decodedId = useMemo(() => decodeURIComponent(params.id).trim(), [params.id]);
+  const decodedId = useMemo(() => {
+    if (!rawId) return '';
+    try {
+      return decodeURIComponent(rawId).trim();
+    } catch (error) {
+      console.warn('Failed to decode article id:', error);
+      return rawId.trim();
+    }
+  }, [rawId]);
   const idMatch = decodedId.match(/\d+/);
   const numericId = idMatch ? Number(idMatch[0]) : Number(decodedId);
   const slugify = (value: string) =>
