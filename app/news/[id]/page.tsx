@@ -70,6 +70,23 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
       return;
     }
 
+    const imageMatch = trimmed.match(/^!\[(.*?)]\((\S+?)(?:\s+"(.*?)")?\)$/);
+    if (imageMatch) {
+      const [, alt, src, caption] = imageMatch;
+      flushList();
+      blocks.push(
+        <figure key={`img-${blocks.length}`} className="space-y-2">
+          <img
+            src={src}
+            alt={alt || 'Illustration'}
+            className="w-full rounded-2xl object-cover shadow-lg"
+          />
+          {caption ? <figcaption className="text-xs text-gray-400">{caption}</figcaption> : null}
+        </figure>
+      );
+      return;
+    }
+
     if (trimmed.startsWith('### ')) {
       flushList();
       blocks.push(
@@ -127,7 +144,7 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
 
     flushList();
     blocks.push(
-      <p key={`p-${blocks.length}`} className="text-gray-200">
+      <p key={`p-${blocks.length}`} className="text-gray-200 text-base leading-relaxed">
         {renderInline(trimmed)}
       </p>
     );
@@ -265,7 +282,7 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
                 className="w-full h-72 object-cover sm:h-96"
               />
               <div className="p-8 text-gray-200">
-                <div className="space-y-4 leading-relaxed">
+                <div className="space-y-6">
                   {blocks.map((block, index) => (
                     <div key={`${article.id}-block-${index}`}>{block}</div>
                   ))}
