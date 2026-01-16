@@ -1,12 +1,22 @@
+'use client';
+
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { FadeIn } from '../../../components/MotionWrapper';
-import { readNews, readNewsById } from '../../../lib/news-store';
 
 export const dynamic = 'force-dynamic';
 
 interface NewsPageProps {
   params: { id: string };
+}
+
+interface NewsArticle {
+  id: number;
+  title: string;
+  excerpt: string;
+  image: string;
+  date: string;
+  content?: string;
 }
 
 const escapeHtml = (value: string) =>
@@ -126,8 +136,32 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
   return blocks;
 };
 
-export default async function NewsDetailPage({ params }: NewsPageProps) {
-  const decodedId = decodeURIComponent(params.id).trim();
+export default function NewsDetailPage({ params }: NewsPageProps) {
+  const [news, setNews] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const response = await fetch('/api/news');
+        if (!response.ok) {
+          throw new Error('Request failed');
+        }
+        const data = await response.json();
+        setNews(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Failed to load news:', error);
+        setLoadError("Impossible de charger l'article.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  const decodedId = useMemo(() => decodeURIComponent(params.id).trim(), [params.id]);
   const idMatch = decodedId.match(/\d+/);
   const numericId = idMatch ? Number(idMatch[0]) : Number(decodedId);
   const slugify = (value: string) =>
@@ -138,14 +172,34 @@ export default async function NewsDetailPage({ params }: NewsPageProps) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
 
-  let article = Number.isFinite(numericId) ? await readNewsById(numericId) : null;
-  const news = article ? [] : await readNews();
   const normalizedId = decodedId.toLowerCase();
-  if (!article) {
-    article =
+  const article = useMemo(() => {
+    if (!news.length) return null;
+    const numericArticle = Number.isFinite(numericId)
+      ? news.find((item) => Number(item.id) === numericId)
+      : undefined;
+    return (
       news.find((item) => String(item.id) === decodedId) ??
+      numericArticle ??
       news.find((item) => slugify(item.title) === normalizedId) ??
-      null;
+      null
+    );
+  }, [decodedId, news, normalizedId, numericId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen px-4 py-16 sm:px-6 lg:px-8 flex items-center justify-center">
+        <p className="text-gray-300">Chargement de l&apos;article...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen px-4 py-16 sm:px-6 lg:px-8 flex items-center justify-center">
+        <p className="text-gray-300">{loadError}</p>
+      </div>
+    );
   }
 
   if (!article) {
