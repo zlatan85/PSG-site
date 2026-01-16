@@ -26,6 +26,30 @@ export async function PUT(request: Request) {
     heroSecondaryHref: isNonEmptyString(payload?.heroSecondaryHref) ? payload.heroSecondaryHref.trim() : base.heroSecondaryHref,
     matchdayTitle: isNonEmptyString(payload?.matchdayTitle) ? payload.matchdayTitle.trim() : base.matchdayTitle,
     matchdaySubtitle: isNonEmptyString(payload?.matchdaySubtitle) ? payload.matchdaySubtitle.trim() : base.matchdaySubtitle,
+    matchdayStatusLabel: isNonEmptyString(payload?.matchdayStatusLabel)
+      ? payload.matchdayStatusLabel.trim()
+      : base.matchdayStatusLabel,
+    matchdayCompetition: isNonEmptyString(payload?.matchdayCompetition)
+      ? payload.matchdayCompetition.trim()
+      : base.matchdayCompetition,
+    matchdayHomeTeam: isNonEmptyString(payload?.matchdayHomeTeam)
+      ? payload.matchdayHomeTeam.trim()
+      : base.matchdayHomeTeam,
+    matchdayAwayTeam: isNonEmptyString(payload?.matchdayAwayTeam)
+      ? payload.matchdayAwayTeam.trim()
+      : base.matchdayAwayTeam,
+    matchdayScore: isNonEmptyString(payload?.matchdayScore)
+      ? payload.matchdayScore.trim()
+      : base.matchdayScore,
+    matchdayDate: isNonEmptyString(payload?.matchdayDate)
+      ? payload.matchdayDate.trim()
+      : base.matchdayDate,
+    matchdayTime: isNonEmptyString(payload?.matchdayTime)
+      ? payload.matchdayTime.trim()
+      : base.matchdayTime,
+    matchdayStadium: isNonEmptyString(payload?.matchdayStadium)
+      ? payload.matchdayStadium.trim()
+      : base.matchdayStadium,
     fanZoneTitle: isNonEmptyString(payload?.fanZoneTitle) ? payload.fanZoneTitle.trim() : base.fanZoneTitle,
     fanZoneSubtitle: isNonEmptyString(payload?.fanZoneSubtitle) ? payload.fanZoneSubtitle.trim() : base.fanZoneSubtitle,
     alertsTitle: isNonEmptyString(payload?.alertsTitle) ? payload.alertsTitle.trim() : base.alertsTitle,
