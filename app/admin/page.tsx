@@ -924,7 +924,7 @@ export default function AdminPage() {
     }
   };
 
-  const saveFanWall = async () => {
+  const persistFanWall = async (nextPosts: FanWallPost[]) => {
     setFanWallError(null);
     setFanWallSaving(true);
 
@@ -932,7 +932,7 @@ export default function AdminPage() {
       const response = await fetch('/api/fan-wall', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ posts: fanWallPosts }),
+        body: JSON.stringify({ posts: nextPosts }),
       });
 
       if (!response.ok) {
@@ -951,20 +951,28 @@ export default function AdminPage() {
     }
   };
 
-  const deleteFanWallPost = (id: number) => {
+  const saveFanWall = async () => {
+    await persistFanWall(fanWallPosts);
+  };
+
+  const deleteFanWallPost = async (id: number) => {
     const confirmed = window.confirm('Supprimer ce message fan wall ?');
     if (!confirmed) return;
-    setFanWallPosts((current) => current.filter((item) => item.id !== id));
+    const nextPosts = fanWallPosts.filter((item) => item.id !== id);
+    setFanWallPosts(nextPosts);
     if (editingFanWallId === id) {
       setFanWallForm(emptyFanWallForm);
       setEditingFanWallId(null);
     }
+    await persistFanWall(nextPosts);
   };
 
-  const toggleFanWallApproval = (id: number) => {
-    setFanWallPosts((current) =>
-      current.map((item) => (item.id === id ? { ...item, approved: !item.approved } : item))
+  const toggleFanWallApproval = async (id: number) => {
+    const nextPosts = fanWallPosts.map((item) =>
+      item.id === id ? { ...item, approved: !item.approved } : item
     );
+    setFanWallPosts(nextPosts);
+    await persistFanWall(nextPosts);
   };
 
   const previewImage = form.image.trim() || '/api/placeholder/600/400';
