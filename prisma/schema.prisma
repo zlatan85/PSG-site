@@ -94,6 +94,16 @@ model FooterSettings {
   payload Json
 }
 
+model TransfersSettings {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}
+
+model HistorySettings {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}
+
 model Standings {
   id      Int  @id @default(autoincrement())
   payload Json

@@ -1,94 +1,169 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FadeIn, ScaleIn } from '../../components/MotionWrapper';
 
-const transfers = [
-  {
-    id: 1,
-    type: 'incoming',
-    player: 'Vitinha',
-    from: 'Roma',
-    to: 'PSG',
-    fee: '41.5M €',
-    date: '2025-01-15',
-    position: 'Midfielder',
-    nationality: 'Portugal'
-  },
-  {
-    id: 2,
-    type: 'incoming',
-    player: 'Carlos Soler',
-    from: 'Valencia',
-    to: 'PSG',
-    fee: '18M €',
-    date: '2024-12-20',
-    position: 'Midfielder',
-    nationality: 'Spain'
-  },
-  {
-    id: 3,
-    type: 'outgoing',
-    player: 'Hugo Ekitike',
-    from: 'PSG',
-    to: 'Eintracht Frankfurt',
-    fee: '15M €',
-    date: '2024-12-10',
-    position: 'Forward',
-    nationality: 'France'
-  },
-  {
-    id: 4,
-    type: 'outgoing',
-    player: 'Renato Sanches',
-    from: 'PSG',
-    to: 'Roma',
-    fee: 'Free',
-    date: '2024-11-25',
-    position: 'Midfielder',
-    nationality: 'Portugal'
-  },
-  {
-    id: 5,
-    type: 'incoming',
-    player: 'Lucas Hernandez',
-    from: 'Bayern Munich',
-    to: 'PSG',
-    fee: '45M €',
-    date: '2024-07-15',
-    position: 'Defender',
-    nationality: 'France'
-  }
-];
+type TransferType = 'incoming' | 'outgoing';
+type TransferInterest = 'High' | 'Medium' | 'Low';
 
-const upcomingTransfers = [
-  {
-    player: 'João Cancelo',
-    position: 'Defender',
-    currentClub: 'Barcelona',
-    interest: 'High',
-    status: 'Negotiations'
+interface TransferEntry {
+  id: number;
+  type: TransferType;
+  player: string;
+  from: string;
+  to: string;
+  fee: string;
+  date: string;
+  position: string;
+  nationality: string;
+}
+
+interface UpcomingTransfer {
+  player: string;
+  position: string;
+  currentClub: string;
+  interest: TransferInterest;
+  status: string;
+}
+
+interface TransfersSettings {
+  heroTitle: string;
+  heroSubtitle: string;
+  badges: string[];
+  marketIndexTitle: string;
+  marketIndexText: string;
+  summary: {
+    arrivals: string;
+    departures: string;
+    netSpend: string;
+  };
+  transfers: TransferEntry[];
+  upcomingTransfers: UpcomingTransfer[];
+}
+
+const defaultTransfersSettings: TransfersSettings = {
+  heroTitle: 'Mercato PSG',
+  heroSubtitle: 'Arrivees, departs, rumeurs et negocations: suivez le mercato en temps reel.',
+  badges: ['Live updates', 'Rumeurs fiables', 'Deals officiels'],
+  marketIndexTitle: 'Indice mercato',
+  marketIndexText: 'Fenetre active: concentration sur les postes offensifs et la profondeur de banc.',
+  summary: {
+    arrivals: '2',
+    departures: '2',
+    netSpend: '€104.5M',
   },
-  {
-    player: 'Enzo Fernandez',
-    position: 'Midfielder',
-    currentClub: 'Chelsea',
-    interest: 'Medium',
-    status: 'Monitoring'
-  },
-  {
-    player: 'Raphinha',
-    position: 'Forward',
-    currentClub: 'Barcelona',
-    interest: 'High',
-    status: 'Advanced Talks'
-  }
-];
+  transfers: [
+    {
+      id: 1,
+      type: 'incoming',
+      player: 'Vitinha',
+      from: 'Roma',
+      to: 'PSG',
+      fee: '41.5M €',
+      date: '2025-01-15',
+      position: 'Midfielder',
+      nationality: 'Portugal',
+    },
+    {
+      id: 2,
+      type: 'incoming',
+      player: 'Carlos Soler',
+      from: 'Valencia',
+      to: 'PSG',
+      fee: '18M €',
+      date: '2024-12-20',
+      position: 'Midfielder',
+      nationality: 'Spain',
+    },
+    {
+      id: 3,
+      type: 'outgoing',
+      player: 'Hugo Ekitike',
+      from: 'PSG',
+      to: 'Eintracht Frankfurt',
+      fee: '15M €',
+      date: '2024-12-10',
+      position: 'Forward',
+      nationality: 'France',
+    },
+    {
+      id: 4,
+      type: 'outgoing',
+      player: 'Renato Sanches',
+      from: 'PSG',
+      to: 'Roma',
+      fee: 'Free',
+      date: '2024-11-25',
+      position: 'Midfielder',
+      nationality: 'Portugal',
+    },
+    {
+      id: 5,
+      type: 'incoming',
+      player: 'Lucas Hernandez',
+      from: 'Bayern Munich',
+      to: 'PSG',
+      fee: '45M €',
+      date: '2024-07-15',
+      position: 'Defender',
+      nationality: 'France',
+    },
+  ],
+  upcomingTransfers: [
+    {
+      player: 'Joao Cancelo',
+      position: 'Defender',
+      currentClub: 'Barcelona',
+      interest: 'High',
+      status: 'Negotiations',
+    },
+    {
+      player: 'Enzo Fernandez',
+      position: 'Midfielder',
+      currentClub: 'Chelsea',
+      interest: 'Medium',
+      status: 'Monitoring',
+    },
+    {
+      player: 'Raphinha',
+      position: 'Forward',
+      currentClub: 'Barcelona',
+      interest: 'High',
+      status: 'Advanced Talks',
+    },
+  ],
+};
 
 export default function TransfersPage() {
   const [filter, setFilter] = useState('all');
+  const [settings, setSettings] = useState<TransfersSettings>(defaultTransfersSettings);
 
-  const filteredTransfers = transfers.filter(transfer => {
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/transfers-settings');
+        const data = await response.json();
+        if (data && typeof data === 'object') {
+          setSettings({
+            ...defaultTransfersSettings,
+            ...data,
+            summary: { ...defaultTransfersSettings.summary, ...(data.summary || {}) },
+            transfers: Array.isArray(data.transfers) ? data.transfers : defaultTransfersSettings.transfers,
+            upcomingTransfers: Array.isArray(data.upcomingTransfers)
+              ? data.upcomingTransfers
+              : defaultTransfersSettings.upcomingTransfers,
+            badges: Array.isArray(data.badges) ? data.badges : defaultTransfersSettings.badges,
+          });
+        }
+      } catch (loadError) {
+        console.error('Failed to load transfer settings:', loadError);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  const filteredTransfers = settings.transfers.filter((transfer) => {
     if (filter === 'all') return true;
     return transfer.type === filter;
   });
@@ -104,13 +179,13 @@ export default function TransfersPage() {
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div className="space-y-4">
                 <h1 className="font-display text-5xl uppercase text-white sm:text-6xl">
-                  Mercato PSG
+                  {settings.heroTitle}
                 </h1>
                 <p className="text-gray-300 max-w-xl">
-                  Arrivees, departs, rumeurs et negocations: suivez le mercato en temps reel.
+                  {settings.heroSubtitle}
                 </p>
                 <div className="flex flex-wrap gap-3 text-xs text-gray-200">
-                  {['Live updates', 'Rumeurs fiables', 'Deals officiels'].map((item) => (
+                  {settings.badges.map((item) => (
                     <span key={item} className="rounded-full bg-white/10 px-4 py-1">
                       {item}
                     </span>
@@ -118,9 +193,9 @@ export default function TransfersPage() {
                 </div>
               </div>
               <div className="rounded-2xl bg-white/5 p-6 text-sm text-gray-200">
-                <p className="text-white font-semibold mb-3">Indice mercato</p>
+                <p className="text-white font-semibold mb-3">{settings.marketIndexTitle}</p>
                 <p className="text-gray-300">
-                  Fenetre active: concentration sur les postes offensifs et la profondeur de banc.
+                  {settings.marketIndexText}
                 </p>
               </div>
             </div>
@@ -131,15 +206,15 @@ export default function TransfersPage() {
         <FadeIn delay={0.4}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div className="glass rounded-2xl p-6 text-center border border-white/10">
-              <div className="text-3xl font-bold text-green-400 mb-2">2</div>
+              <div className="text-3xl font-bold text-green-400 mb-2">{settings.summary.arrivals}</div>
               <div className="text-gray-300">Arrivées</div>
             </div>
             <div className="glass rounded-2xl p-6 text-center border border-white/10">
-              <div className="text-3xl font-bold text-red-400 mb-2">2</div>
+              <div className="text-3xl font-bold text-red-400 mb-2">{settings.summary.departures}</div>
               <div className="text-gray-300">Départs</div>
             </div>
             <div className="glass rounded-2xl p-6 text-center border border-white/10">
-              <div className="text-3xl font-bold text-blue-400 mb-2">€104.5M</div>
+              <div className="text-3xl font-bold text-blue-400 mb-2">{settings.summary.netSpend}</div>
               <div className="text-gray-300">Dépenses nettes</div>
             </div>
           </div>
@@ -209,7 +284,7 @@ export default function TransfersPage() {
           <div className="glass rounded-2xl p-8 border border-white/10">
             <h2 className="text-2xl font-bold text-white mb-6">Transferts a venir</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingTransfers.map((transfer, index) => (
+              {settings.upcomingTransfers.map((transfer, index) => (
                 <ScaleIn key={index} delay={1.0 + index * 0.1}>
                   <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
                     <h3 className="text-lg font-semibold text-white mb-2">{transfer.player}</h3>

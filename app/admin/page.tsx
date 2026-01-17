@@ -144,6 +144,62 @@ interface ChallengeEntry {
   createdAt: string;
 }
 
+interface TransferEntry {
+  id: number;
+  type: 'incoming' | 'outgoing';
+  player: string;
+  from: string;
+  to: string;
+  fee: string;
+  date: string;
+  position: string;
+  nationality: string;
+}
+
+interface UpcomingTransfer {
+  player: string;
+  position: string;
+  currentClub: string;
+  interest: 'High' | 'Medium' | 'Low';
+  status: string;
+}
+
+interface TransfersSettings {
+  heroTitle: string;
+  heroSubtitle: string;
+  badges: string[];
+  marketIndexTitle: string;
+  marketIndexText: string;
+  summary: {
+    arrivals: string;
+    departures: string;
+    netSpend: string;
+  };
+  transfers: TransferEntry[];
+  upcomingTransfers: UpcomingTransfer[];
+}
+
+interface HistoryStat {
+  label: string;
+  value: string;
+}
+
+interface HistoryTimelineItem {
+  year: string;
+  title: string;
+  text: string;
+}
+
+interface HistorySettings {
+  heroKicker: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  introTitle: string;
+  introText: string;
+  stats: HistoryStat[];
+  timeline: HistoryTimelineItem[];
+}
+
 interface HomeSettings {
   heroLabel: string;
   heroTitle: string;
@@ -326,6 +382,193 @@ const defaultFanZonePoll: FanZonePoll = {
   ],
 };
 
+const defaultTransfersSettings: TransfersSettings = {
+  heroTitle: 'Mercato PSG',
+  heroSubtitle: 'Arrivees, departs, rumeurs et negocations: suivez le mercato en temps reel.',
+  badges: ['Live updates', 'Rumeurs fiables', 'Deals officiels'],
+  marketIndexTitle: 'Indice mercato',
+  marketIndexText: 'Fenetre active: concentration sur les postes offensifs et la profondeur de banc.',
+  summary: {
+    arrivals: '2',
+    departures: '2',
+    netSpend: '€104.5M',
+  },
+  transfers: [
+    {
+      id: 1,
+      type: 'incoming',
+      player: 'Vitinha',
+      from: 'Roma',
+      to: 'PSG',
+      fee: '41.5M €',
+      date: '2025-01-15',
+      position: 'Midfielder',
+      nationality: 'Portugal',
+    },
+    {
+      id: 2,
+      type: 'incoming',
+      player: 'Carlos Soler',
+      from: 'Valencia',
+      to: 'PSG',
+      fee: '18M €',
+      date: '2024-12-20',
+      position: 'Midfielder',
+      nationality: 'Spain',
+    },
+    {
+      id: 3,
+      type: 'outgoing',
+      player: 'Hugo Ekitike',
+      from: 'PSG',
+      to: 'Eintracht Frankfurt',
+      fee: '15M €',
+      date: '2024-12-10',
+      position: 'Forward',
+      nationality: 'France',
+    },
+    {
+      id: 4,
+      type: 'outgoing',
+      player: 'Renato Sanches',
+      from: 'PSG',
+      to: 'Roma',
+      fee: 'Free',
+      date: '2024-11-25',
+      position: 'Midfielder',
+      nationality: 'Portugal',
+    },
+    {
+      id: 5,
+      type: 'incoming',
+      player: 'Lucas Hernandez',
+      from: 'Bayern Munich',
+      to: 'PSG',
+      fee: '45M €',
+      date: '2024-07-15',
+      position: 'Defender',
+      nationality: 'France',
+    },
+  ],
+  upcomingTransfers: [
+    {
+      player: 'Joao Cancelo',
+      position: 'Defender',
+      currentClub: 'Barcelona',
+      interest: 'High',
+      status: 'Negotiations',
+    },
+    {
+      player: 'Enzo Fernandez',
+      position: 'Midfielder',
+      currentClub: 'Chelsea',
+      interest: 'Medium',
+      status: 'Monitoring',
+    },
+    {
+      player: 'Raphinha',
+      position: 'Forward',
+      currentClub: 'Barcelona',
+      interest: 'High',
+      status: 'Advanced Talks',
+    },
+  ],
+};
+
+const defaultHistorySettings: HistorySettings = {
+  heroKicker: 'Depuis 1970',
+  heroTitle: "L'ADN PSG",
+  heroSubtitle: 'Un club parisien, une ambition europeenne, une histoire faite de titres et de legends.',
+  introTitle: 'Temps forts',
+  introText: "Des origines a l'ere moderne, PSG ne cesse d'elever ses standards.",
+  stats: [
+    { label: 'Ligue 1', value: '11' },
+    { label: 'Coupes', value: '30+' },
+    { label: 'Finales europeennes', value: '2' },
+    { label: 'Legendes', value: '100%' },
+  ],
+  timeline: [
+    {
+      year: '1970',
+      title: 'Foundation',
+      text: 'Paris Saint-Germain Football Club is founded by merger of Stade Saint-Germain and Paris FC.',
+    },
+    { year: '1972', title: 'First Trophy', text: 'PSG wins its first major trophy, the Coupe de France.' },
+    {
+      year: '1974',
+      title: 'European Debut',
+      text: "First appearance in European competition with UEFA Cup Winners' Cup.",
+    },
+    {
+      year: '1982',
+      title: 'Stade Parc des Princes',
+      text: 'PSG moves to the iconic Parc des Princes stadium.',
+    },
+    {
+      year: '1986',
+      title: 'First League Title',
+      text: 'PSG wins its first Ligue 1 championship under manager Gerard Houllier.',
+    },
+    {
+      year: '1994-1996',
+      title: 'European Breakthrough',
+      text: 'PSG wins Coupe des Coupes (1996) and reaches UEFA Cup final (1997).',
+    },
+    { year: '1998', title: 'World Cup Glory', text: 'France wins World Cup with several PSG players in the squad.' },
+    {
+      year: '2000',
+      title: 'Century Trophy',
+      text: 'PSG wins Coupe de la Ligue, completing a domestic cup double.',
+    },
+    {
+      year: '2011',
+      title: 'Qatari Investment',
+      text: 'Qatar Sports Investments acquires majority stake, beginning new era.',
+    },
+    {
+      year: '2013',
+      title: 'First Champions League Semi-Final',
+      text: 'PSG reaches Champions League semi-finals for the first time.',
+    },
+    {
+      year: '2015',
+      title: 'Domestic Dominance',
+      text: 'PSG wins Ligue 1, Coupe de France, and Coupe de la Ligue treble.',
+    },
+    {
+      year: '2017',
+      title: 'Galacticos Era Begins',
+      text: 'Signing of Neymar Jr. marks beginning of superstar acquisitions.',
+    },
+    {
+      year: '2018',
+      title: 'Mbappe Joins',
+      text: "Kylian Mbappe signs from Monaco, becoming one of world's most expensive transfers.",
+    },
+    { year: '2020', title: 'UCL Final', text: 'PSG reaches its first Champions League final.' },
+    {
+      year: '2021',
+      title: 'Messi Arrives',
+      text: 'Lionel Messi joins PSG after leaving Barcelona, completing holy trinity with Neymar and Mbappe.',
+    },
+    {
+      year: '2022',
+      title: 'Domestic Success',
+      text: 'PSG wins Ligue 1 title and reaches Champions League final again.',
+    },
+    {
+      year: '2023',
+      title: 'Continued Excellence',
+      text: "PSG maintains position as France's top club with continued European ambitions.",
+    },
+    {
+      year: '2024',
+      title: 'Future Champions',
+      text: 'PSG continues to build towards Champions League glory with world-class squad.',
+    },
+  ],
+};
+
 const defaultPredictions: PredictionEntry[] = [];
 const defaultChallenges: ChallengeEntry[] = [];
 
@@ -396,6 +639,14 @@ export default function AdminPage() {
   const [challenges, setChallenges] = useState<ChallengeEntry[]>(defaultChallenges);
   const [challengesLoading, setChallengesLoading] = useState(true);
   const [challengesError, setChallengesError] = useState<string | null>(null);
+  const [transfersSettings, setTransfersSettings] = useState<TransfersSettings>(defaultTransfersSettings);
+  const [transfersLoading, setTransfersLoading] = useState(true);
+  const [transfersSaving, setTransfersSaving] = useState(false);
+  const [transfersError, setTransfersError] = useState<string | null>(null);
+  const [historySettings, setHistorySettings] = useState<HistorySettings>(defaultHistorySettings);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historySaving, setHistorySaving] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   const sortedArticles = useMemo(
     () => [...articles].sort((a, b) => b.date.localeCompare(a.date)),
@@ -541,6 +792,48 @@ export default function AdminPage() {
     }
   };
 
+  const loadTransfersSettings = async () => {
+    try {
+      setTransfersLoading(true);
+      const response = await fetch('/api/transfers-settings');
+      const data = await response.json();
+      setTransfersSettings({
+        ...defaultTransfersSettings,
+        ...(data || {}),
+        summary: { ...defaultTransfersSettings.summary, ...(data?.summary || {}) },
+        transfers: Array.isArray(data?.transfers) ? data.transfers : defaultTransfersSettings.transfers,
+        upcomingTransfers: Array.isArray(data?.upcomingTransfers)
+          ? data.upcomingTransfers
+          : defaultTransfersSettings.upcomingTransfers,
+        badges: Array.isArray(data?.badges) ? data.badges : defaultTransfersSettings.badges,
+      });
+    } catch (loadError) {
+      console.error('Failed to load transfers settings:', loadError);
+      setTransfersError('Impossible de charger les transferts.');
+    } finally {
+      setTransfersLoading(false);
+    }
+  };
+
+  const loadHistorySettings = async () => {
+    try {
+      setHistoryLoading(true);
+      const response = await fetch('/api/history-settings');
+      const data = await response.json();
+      setHistorySettings({
+        ...defaultHistorySettings,
+        ...(data || {}),
+        stats: Array.isArray(data?.stats) ? data.stats : defaultHistorySettings.stats,
+        timeline: Array.isArray(data?.timeline) ? data.timeline : defaultHistorySettings.timeline,
+      });
+    } catch (loadError) {
+      console.error('Failed to load history settings:', loadError);
+      setHistoryError("Impossible de charger l'histoire.");
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const loadStandings = async () => {
     try {
       setStandingsLoading(true);
@@ -656,6 +949,8 @@ export default function AdminPage() {
     loadFanWall();
     loadHomeSettings();
     loadFooterSettings();
+    loadTransfersSettings();
+    loadHistorySettings();
     loadStandings();
     loadTopStats();
     loadLiveOverrides();
@@ -824,6 +1119,156 @@ export default function AdminPage() {
     setFanZonePoll((current) => ({
       ...current,
       options: current.options.map((option) => ({ ...option, votes: 0 })),
+    }));
+  };
+
+  const handleTransfersSettingsChange = (field: keyof TransfersSettings) => (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setTransfersSettings((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const handleTransfersSummaryChange = (field: keyof TransfersSettings['summary']) => (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    setTransfersSettings((current) => ({
+      ...current,
+      summary: { ...current.summary, [field]: event.target.value },
+    }));
+  };
+
+  const updateTransfersBadge = (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
+    setTransfersSettings((current) => {
+      const nextBadges = [...current.badges];
+      nextBadges[index] = event.target.value;
+      return { ...current, badges: nextBadges };
+    });
+  };
+
+  const updateTransferEntry = (index: number, field: keyof TransferEntry, value: string) => {
+    setTransfersSettings((current) => ({
+      ...current,
+      transfers: current.transfers.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const addTransferEntry = () => {
+    setTransfersSettings((current) => ({
+      ...current,
+      transfers: [
+        ...current.transfers,
+        {
+          id: current.transfers.length + 1,
+          type: 'incoming',
+          player: 'Joueur',
+          from: 'Club',
+          to: 'PSG',
+          fee: '-',
+          date: '2026-01-01',
+          position: 'Position',
+          nationality: 'Pays',
+        },
+      ],
+    }));
+  };
+
+  const removeTransferEntry = (index: number) => {
+    setTransfersSettings((current) => ({
+      ...current,
+      transfers: current.transfers.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
+  const updateUpcomingTransfer = (index: number, field: keyof UpcomingTransfer, value: string) => {
+    setTransfersSettings((current) => ({
+      ...current,
+      upcomingTransfers: current.upcomingTransfers.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const addUpcomingTransfer = () => {
+    setTransfersSettings((current) => ({
+      ...current,
+      upcomingTransfers: [
+        ...current.upcomingTransfers,
+        {
+          player: 'Joueur',
+          position: 'Poste',
+          currentClub: 'Club',
+          interest: 'Medium',
+          status: 'Monitoring',
+        },
+      ],
+    }));
+  };
+
+  const removeUpcomingTransfer = (index: number) => {
+    setTransfersSettings((current) => ({
+      ...current,
+      upcomingTransfers: current.upcomingTransfers.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
+  const handleHistorySettingsChange = (field: keyof HistorySettings) => (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setHistorySettings((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const updateHistoryStat = (index: number, field: keyof HistoryStat, value: string) => {
+    setHistorySettings((current) => ({
+      ...current,
+      stats: current.stats.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const addHistoryStat = () => {
+    setHistorySettings((current) => ({
+      ...current,
+      stats: [...current.stats, { label: 'Stat', value: '-' }],
+    }));
+  };
+
+  const removeHistoryStat = (index: number) => {
+    setHistorySettings((current) => ({
+      ...current,
+      stats: current.stats.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
+  const updateHistoryTimeline = (index: number, field: keyof HistoryTimelineItem, value: string) => {
+    setHistorySettings((current) => ({
+      ...current,
+      timeline: current.timeline.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const addHistoryTimeline = () => {
+    setHistorySettings((current) => ({
+      ...current,
+      timeline: [
+        ...current.timeline,
+        {
+          year: '2026',
+          title: 'Nouveau chapitre',
+          text: 'Decris ici le moment fort.',
+        },
+      ],
+    }));
+  };
+
+  const removeHistoryTimeline = (index: number) => {
+    setHistorySettings((current) => ({
+      ...current,
+      timeline: current.timeline.filter((_, itemIndex) => itemIndex !== index),
     }));
   };
 
@@ -1074,6 +1519,70 @@ export default function AdminPage() {
       setFooterError('Impossible de sauvegarder le footer.');
     } finally {
       setFooterSaving(false);
+    }
+  };
+
+  const saveTransfersSettings = async () => {
+    setTransfersError(null);
+    setTransfersSaving(true);
+
+    try {
+      const response = await fetch('/api/transfers-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transfersSettings),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setTransfersSettings({
+        ...defaultTransfersSettings,
+        ...(data || {}),
+        summary: { ...defaultTransfersSettings.summary, ...(data?.summary || {}) },
+        transfers: Array.isArray(data?.transfers) ? data.transfers : defaultTransfersSettings.transfers,
+        upcomingTransfers: Array.isArray(data?.upcomingTransfers)
+          ? data.upcomingTransfers
+          : defaultTransfersSettings.upcomingTransfers,
+        badges: Array.isArray(data?.badges) ? data.badges : defaultTransfersSettings.badges,
+      });
+    } catch (saveError) {
+      console.error('Failed to save transfers settings:', saveError);
+      setTransfersError('Impossible de sauvegarder les transferts.');
+    } finally {
+      setTransfersSaving(false);
+    }
+  };
+
+  const saveHistorySettings = async () => {
+    setHistoryError(null);
+    setHistorySaving(true);
+
+    try {
+      const response = await fetch('/api/history-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(historySettings),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setHistorySettings({
+        ...defaultHistorySettings,
+        ...(data || {}),
+        stats: Array.isArray(data?.stats) ? data.stats : defaultHistorySettings.stats,
+        timeline: Array.isArray(data?.timeline) ? data.timeline : defaultHistorySettings.timeline,
+      });
+    } catch (saveError) {
+      console.error('Failed to save history settings:', saveError);
+      setHistoryError("Impossible de sauvegarder l'histoire.");
+    } finally {
+      setHistorySaving(false);
     }
   };
 
@@ -2220,6 +2729,413 @@ export default function AdminPage() {
                 </span>
               </div>
               <div className="text-xs text-gray-500">{footerSettings.bottomText}</div>
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold text-white">Page Transferts</div>
+                  <p className="text-sm text-gray-400">Hero, stats et listes de transferts.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={saveTransfersSettings}
+                  disabled={transfersSaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {transfersSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+                </button>
+              </div>
+
+              {transfersError && <div className="text-sm text-red-300">{transfersError}</div>}
+
+              {transfersLoading ? (
+                <div className="text-gray-300">Chargement...</div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid gap-3">
+                    <input
+                      type="text"
+                      placeholder="Titre hero"
+                      value={transfersSettings.heroTitle}
+                      onChange={handleTransfersSettingsChange('heroTitle')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Sous-titre hero"
+                      value={transfersSettings.heroSubtitle}
+                      onChange={handleTransfersSettingsChange('heroSubtitle')}
+                      className="min-h-[100px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {transfersSettings.badges.map((badge, index) => (
+                      <input
+                        key={`badge-${index}`}
+                        type="text"
+                        placeholder={`Badge ${index + 1}`}
+                        value={badge}
+                        onChange={updateTransfersBadge(index)}
+                        className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    ))}
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="Titre indice mercato"
+                      value={transfersSettings.marketIndexTitle}
+                      onChange={handleTransfersSettingsChange('marketIndexTitle')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Texte indice mercato"
+                      value={transfersSettings.marketIndexText}
+                      onChange={handleTransfersSettingsChange('marketIndexText')}
+                      className="min-h-[80px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <input
+                      type="text"
+                      placeholder="Arrivees"
+                      value={transfersSettings.summary.arrivals}
+                      onChange={handleTransfersSummaryChange('arrivals')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Departs"
+                      value={transfersSettings.summary.departures}
+                      onChange={handleTransfersSummaryChange('departures')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Depenses nettes"
+                      value={transfersSettings.summary.netSpend}
+                      onChange={handleTransfersSummaryChange('netSpend')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-300">Transferts officiels</div>
+                      <button
+                        type="button"
+                        onClick={addTransferEntry}
+                        className="text-xs text-red-200 hover:text-red-100"
+                      >
+                        + Ajouter
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {transfersSettings.transfers.map((transfer, index) => (
+                        <div key={`transfer-${index}`} className="rounded-lg border border-white/10 p-4 space-y-3">
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <select
+                              value={transfer.type}
+                              onChange={(event) => updateTransferEntry(index, 'type', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                            >
+                              <option value="incoming" className="bg-blue-900">Arrivee</option>
+                              <option value="outgoing" className="bg-blue-900">Depart</option>
+                            </select>
+                            <input
+                              type="text"
+                              placeholder="Joueur"
+                              value={transfer.player}
+                              onChange={(event) => updateTransferEntry(index, 'player', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Poste"
+                              value={transfer.position}
+                              onChange={(event) => updateTransferEntry(index, 'position', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <input
+                              type="text"
+                              placeholder="De"
+                              value={transfer.from}
+                              onChange={(event) => updateTransferEntry(index, 'from', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Vers"
+                              value={transfer.to}
+                              onChange={(event) => updateTransferEntry(index, 'to', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Nationalite"
+                              value={transfer.nationality}
+                              onChange={(event) => updateTransferEntry(index, 'nationality', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <input
+                              type="text"
+                              placeholder="Montant"
+                              value={transfer.fee}
+                              onChange={(event) => updateTransferEntry(index, 'fee', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <input
+                              type="date"
+                              value={transfer.date}
+                              onChange={(event) => updateTransferEntry(index, 'date', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeTransferEntry(index)}
+                              className="rounded-lg bg-white/10 px-4 py-2 text-xs text-white hover:bg-white/20 transition-colors"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-300">Transferts a venir</div>
+                      <button
+                        type="button"
+                        onClick={addUpcomingTransfer}
+                        className="text-xs text-red-200 hover:text-red-100"
+                      >
+                        + Ajouter
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {transfersSettings.upcomingTransfers.map((transfer, index) => (
+                        <div key={`upcoming-${index}`} className="rounded-lg border border-white/10 p-4 grid gap-3 sm:grid-cols-5">
+                          <input
+                            type="text"
+                            placeholder="Joueur"
+                            value={transfer.player}
+                            onChange={(event) => updateUpcomingTransfer(index, 'player', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Poste"
+                            value={transfer.position}
+                            onChange={(event) => updateUpcomingTransfer(index, 'position', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Club"
+                            value={transfer.currentClub}
+                            onChange={(event) => updateUpcomingTransfer(index, 'currentClub', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                          <select
+                            value={transfer.interest}
+                            onChange={(event) => updateUpcomingTransfer(index, 'interest', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                          >
+                            <option value="High" className="bg-blue-900">High</option>
+                            <option value="Medium" className="bg-blue-900">Medium</option>
+                            <option value="Low" className="bg-blue-900">Low</option>
+                          </select>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Statut"
+                              value={transfer.status}
+                              onChange={(event) => updateUpcomingTransfer(index, 'status', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeUpcomingTransfer(index)}
+                              className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 transition-colors"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold text-white">Page Histoire</div>
+                  <p className="text-sm text-gray-400">Hero, stats et timeline.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={saveHistorySettings}
+                  disabled={historySaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {historySaving ? 'Sauvegarde...' : 'Sauvegarder'}
+                </button>
+              </div>
+
+              {historyError && <div className="text-sm text-red-300">{historyError}</div>}
+
+              {historyLoading ? (
+                <div className="text-gray-300">Chargement...</div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid gap-3">
+                    <input
+                      type="text"
+                      placeholder="Kicker"
+                      value={historySettings.heroKicker}
+                      onChange={handleHistorySettingsChange('heroKicker')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Titre hero"
+                      value={historySettings.heroTitle}
+                      onChange={handleHistorySettingsChange('heroTitle')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Sous-titre hero"
+                      value={historySettings.heroSubtitle}
+                      onChange={handleHistorySettingsChange('heroSubtitle')}
+                      className="min-h-[80px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="Titre intro"
+                      value={historySettings.introTitle}
+                      onChange={handleHistorySettingsChange('introTitle')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Texte intro"
+                      value={historySettings.introText}
+                      onChange={handleHistorySettingsChange('introText')}
+                      className="min-h-[80px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-300">Stats</div>
+                      <button
+                        type="button"
+                        onClick={addHistoryStat}
+                        className="text-xs text-red-200 hover:text-red-100"
+                      >
+                        + Ajouter
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {historySettings.stats.map((stat, index) => (
+                        <div key={`history-stat-${index}`} className="grid gap-3 sm:grid-cols-3">
+                          <input
+                            type="text"
+                            placeholder="Label"
+                            value={stat.label}
+                            onChange={(event) => updateHistoryStat(index, 'label', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Valeur"
+                            value={stat.value}
+                            onChange={(event) => updateHistoryStat(index, 'value', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeHistoryStat(index)}
+                            className="rounded-lg bg-white/10 px-4 py-2 text-xs text-white hover:bg-white/20 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-300">Timeline</div>
+                      <button
+                        type="button"
+                        onClick={addHistoryTimeline}
+                        className="text-xs text-red-200 hover:text-red-100"
+                      >
+                        + Ajouter
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {historySettings.timeline.map((item, index) => (
+                        <div key={`history-${index}`} className="rounded-lg border border-white/10 p-4 space-y-3">
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <input
+                              type="text"
+                              placeholder="Annee"
+                              value={item.year}
+                              onChange={(event) => updateHistoryTimeline(index, 'year', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Titre"
+                              value={item.title}
+                              onChange={(event) => updateHistoryTimeline(index, 'title', event.target.value)}
+                              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeHistoryTimeline(index)}
+                              className="rounded-lg bg-white/10 px-4 py-2 text-xs text-white hover:bg-white/20 transition-colors"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                          <textarea
+                            placeholder="Texte"
+                            value={item.text}
+                            onChange={(event) => updateHistoryTimeline(index, 'text', event.target.value)}
+                            className="min-h-[90px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </FadeIn>
         </div>
