@@ -155,7 +155,7 @@ const emptyFanWallForm: FanWallPost = {
 
 const defaultHomeSettings: HomeSettings = {
   heroLabel: 'La une du jour',
-  heroTitle: 'PSG Newsroom',
+  heroTitle: 'ULTEAM PSG-X',
   heroExcerpt: 'Toutes les actus, les moments forts et les insights pour vivre Paris a fond.',
   heroImage: '/api/placeholder/1600/900',
   heroPrimaryLabel: "Lire l'article",
@@ -182,12 +182,12 @@ const defaultHomeSettings: HomeSettings = {
 };
 
 const defaultFooterSettings: FooterSettings = {
-  brandTitle: 'PSG News',
+  brandTitle: 'ULTEAM PSG-X',
   brandText: 'Le hub des supporters: actus, live, fan zone et moments forts du PSG.',
   alertsTitle: 'Matchday Alertes',
   alertsText: 'Recois les moments chauds du match et les annonces officielles.',
   alertsCtaLabel: "M'alerter",
-  bottomText: '© 2026 PSG News. Tous droits reserves.',
+  bottomText: '© 2026 ULTEAM PSG-X. Tous droits reserves.',
 };
 
 export default function AdminPage() {

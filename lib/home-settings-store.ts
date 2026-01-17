@@ -31,7 +31,7 @@ export interface HomeSettings {
 
 export const defaultHomeSettings: HomeSettings = {
   heroLabel: 'La une du jour',
-  heroTitle: 'PSG Newsroom',
+  heroTitle: 'ULTEAM PSG-X',
   heroExcerpt: 'Toutes les actus, les moments forts et les insights pour vivre Paris a fond.',
   heroImage: '/api/placeholder/1600/900',
   heroPrimaryLabel: "Lire l'article",

@@ -62,7 +62,7 @@ export default function NewsPage() {
             <div className="matchday-orb right matchday-float" />
             <div className="space-y-4">
               <h1 className="font-display text-5xl uppercase text-white sm:text-6xl">
-                PSG Newsroom
+                ULTEAM PSG-X Newsroom
               </h1>
               <p className="text-gray-300 max-w-2xl">
                 Actus, analyses, interviews et coulisses du club.

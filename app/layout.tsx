@@ -16,7 +16,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "PSG News - Paris Saint-Germain Official News Site",
+  title: "ULTEAM PSG-X - Paris Saint-Germain Official News Site",
   description: "Stay updated with the latest Paris Saint-Germain news, match results, player updates, and more.",
 };
 

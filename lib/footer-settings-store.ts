@@ -11,12 +11,12 @@ export interface FooterSettings {
 }
 
 export const defaultFooterSettings: FooterSettings = {
-  brandTitle: 'PSG News',
+  brandTitle: 'ULTEAM PSG-X',
   brandText: 'Le hub des supporters: actus, live, fan zone et moments forts du PSG.',
   alertsTitle: 'Matchday Alertes',
   alertsText: 'Recois les moments chauds du match et les annonces officielles.',
   alertsCtaLabel: "M'alerter",
-  bottomText: '© 2026 PSG News. Tous droits reserves.',
+  bottomText: '© 2026 ULTEAM PSG-X. Tous droits reserves.',
 };
 
 export async function readFooterSettings(): Promise<FooterSettings | null> {

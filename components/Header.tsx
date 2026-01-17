@@ -27,7 +27,7 @@ export default function Header() {
           <div className="flex">
             <div className="flex flex-shrink-0 items-center">
               <Link href="/" className="text-white font-bold text-xl tracking-wide">
-                PSG News
+                ULTEAM PSG-X
               </Link>
             </div>
           </div>
