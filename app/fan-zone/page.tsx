@@ -1,12 +1,9 @@
 import { FadeIn, ScaleIn } from '../../components/MotionWrapper';
 import FanWallComposer from '../../components/FanWallComposer';
+import FanZonePoll from '../../components/FanZonePoll';
+import FanZonePredictions from '../../components/FanZonePredictions';
+import FanZoneChallenge from '../../components/FanZoneChallenge';
 import { readFanWall } from '../../lib/fan-wall-store';
-
-const pulses = [
-  { label: 'Victoire PSG', value: 72 },
-  { label: 'Match nul', value: 18 },
-  { label: 'Victoire adverse', value: 10 },
-];
 
 const highlights = [
   {
@@ -92,32 +89,7 @@ export default async function FanZonePage() {
 
           <div className="space-y-6">
             <ScaleIn delay={0.35}>
-              <div className="glass matchday-glow matchday-sweep rounded-2xl p-6">
-                <h3 className="text-xl font-semibold text-white mb-4">Fan Pulse</h3>
-                <p className="text-gray-300 mb-6">Ton pronostic pour ce match ?</p>
-                <div className="space-y-4">
-                  {pulses.map((pulse) => (
-                    <div key={pulse.label}>
-                      <div className="flex items-center justify-between text-sm text-gray-300 mb-2">
-                        <span>{pulse.label}</span>
-                        <span>{pulse.value}%</span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-white/10">
-                        <div
-                          className="h-2 rounded-full bg-red-500"
-                          style={{ width: `${pulse.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  className="mt-6 w-full rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors"
-                  type="button"
-                >
-                  Voter maintenant
-                </button>
-              </div>
+              <FanZonePoll />
             </ScaleIn>
 
             <ScaleIn delay={0.4}>
@@ -132,6 +104,10 @@ export default async function FanZonePage() {
                   ))}
                 </div>
               </div>
+            </ScaleIn>
+
+            <ScaleIn delay={0.45}>
+              <FanZonePredictions />
             </ScaleIn>
           </div>
         </div>
@@ -161,26 +137,7 @@ export default async function FanZonePage() {
           </ScaleIn>
 
           <ScaleIn delay={0.45}>
-            <div className="glass rounded-2xl p-8 space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-3">Supporter du match</h3>
-                <div className="rounded-xl bg-white/5 p-4">
-                  <p className="text-sm text-gray-300">Selection du staff</p>
-                  <p className="mt-2 text-white font-semibold">Nina R. - Boulogne</p>
-                  <p className="mt-2 text-sm text-gray-400">“On chante jusqu&apos;a la derniere minute.”</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-3">Matchday Challenge</h3>
-                <p className="text-gray-300 mb-4">Partage ta photo en rouge et bleu.</p>
-                <button
-                  className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
-                  type="button"
-                >
-                  Participer
-                </button>
-              </div>
-            </div>
+            <FanZoneChallenge />
           </ScaleIn>
         </div>
       </div>

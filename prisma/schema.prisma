@@ -108,3 +108,29 @@ model LiveOverrides {
   id      Int  @id @default(autoincrement())
   payload Json
 }
+
+model FanZonePoll {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}
+
+model FanPrediction {
+  id        Int      @id @default(autoincrement())
+  name      String
+  handle    String?
+  homeScore Int
+  awayScore Int
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model FanChallenge {
+  id        Int      @id @default(autoincrement())
+  name      String
+  handle    String?
+  caption   String?  @db.Text
+  mediaUrl  String   @db.Text
+  mediaType String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

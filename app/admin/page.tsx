@@ -113,6 +113,37 @@ interface LiveOverridesForm {
   startersHomeText: string;
   benchHomeText: string;
 }
+interface FanZonePollOption {
+  label: string;
+  votes: number;
+}
+
+interface FanZonePoll {
+  question: string;
+  options: FanZonePollOption[];
+}
+
+interface PredictionEntry {
+  id: number;
+  name: string;
+  handle: string;
+  homeScore: number;
+  awayScore: number;
+  approved: boolean;
+  createdAt: string;
+}
+
+interface ChallengeEntry {
+  id: number;
+  name: string;
+  handle: string;
+  caption: string;
+  mediaUrl: string;
+  mediaType: string;
+  approved: boolean;
+  createdAt: string;
+}
+
 interface HomeSettings {
   heroLabel: string;
   heroTitle: string;
@@ -286,6 +317,18 @@ const defaultLiveOverridesForm: LiveOverridesForm = {
   benchHomeText: '',
 };
 
+const defaultFanZonePoll: FanZonePoll = {
+  question: 'Qui est le joueur du match ?',
+  options: [
+    { label: 'K. Mbappe', votes: 0 },
+    { label: 'O. Dembele', votes: 0 },
+    { label: 'Vitinha', votes: 0 },
+  ],
+};
+
+const defaultPredictions: PredictionEntry[] = [];
+const defaultChallenges: ChallengeEntry[] = [];
+
 export default function AdminPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -343,6 +386,16 @@ export default function AdminPage() {
   const [liveOverridesLoading, setLiveOverridesLoading] = useState(true);
   const [liveOverridesSaving, setLiveOverridesSaving] = useState(false);
   const [liveOverridesError, setLiveOverridesError] = useState<string | null>(null);
+  const [fanZonePoll, setFanZonePoll] = useState<FanZonePoll>(defaultFanZonePoll);
+  const [fanZonePollLoading, setFanZonePollLoading] = useState(true);
+  const [fanZonePollSaving, setFanZonePollSaving] = useState(false);
+  const [fanZonePollError, setFanZonePollError] = useState<string | null>(null);
+  const [predictions, setPredictions] = useState<PredictionEntry[]>(defaultPredictions);
+  const [predictionsLoading, setPredictionsLoading] = useState(true);
+  const [predictionsError, setPredictionsError] = useState<string | null>(null);
+  const [challenges, setChallenges] = useState<ChallengeEntry[]>(defaultChallenges);
+  const [challengesLoading, setChallengesLoading] = useState(true);
+  const [challengesError, setChallengesError] = useState<string | null>(null);
 
   const sortedArticles = useMemo(
     () => [...articles].sort((a, b) => b.date.localeCompare(a.date)),
@@ -376,6 +429,14 @@ export default function AdminPage() {
     () => [...fanWallPosts].sort((a, b) => a.id - b.id),
     [fanWallPosts]
   );
+
+  const pollOptions = useMemo(() => {
+    const options = [...fanZonePoll.options].slice(0, 3);
+    while (options.length < 3) {
+      options.push({ label: `Option ${options.length + 1}`, votes: 0 });
+    }
+    return options;
+  }, [fanZonePoll.options]);
 
   const loadArticles = async () => {
     try {
@@ -545,6 +606,48 @@ export default function AdminPage() {
     }
   };
 
+  const loadFanZonePoll = async () => {
+    try {
+      setFanZonePollLoading(true);
+      const response = await fetch('/api/fan-zone/poll');
+      const data = await response.json();
+      setFanZonePoll(data ?? defaultFanZonePoll);
+    } catch (loadError) {
+      console.error('Failed to load fan zone poll:', loadError);
+      setFanZonePollError('Impossible de charger le sondage.');
+    } finally {
+      setFanZonePollLoading(false);
+    }
+  };
+
+  const loadPredictions = async () => {
+    try {
+      setPredictionsLoading(true);
+      const response = await fetch('/api/fan-zone/predictions?all=1');
+      const data = await response.json();
+      setPredictions(Array.isArray(data) ? data : []);
+    } catch (loadError) {
+      console.error('Failed to load predictions:', loadError);
+      setPredictionsError('Impossible de charger les pronostics.');
+    } finally {
+      setPredictionsLoading(false);
+    }
+  };
+
+  const loadChallenges = async () => {
+    try {
+      setChallengesLoading(true);
+      const response = await fetch('/api/fan-zone/challenges?all=1');
+      const data = await response.json();
+      setChallenges(Array.isArray(data) ? data : []);
+    } catch (loadError) {
+      console.error('Failed to load challenges:', loadError);
+      setChallengesError('Impossible de charger les challenges.');
+    } finally {
+      setChallengesLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadArticles();
     loadMatches();
@@ -556,6 +659,9 @@ export default function AdminPage() {
     loadStandings();
     loadTopStats();
     loadLiveOverrides();
+    loadFanZonePoll();
+    loadPredictions();
+    loadChallenges();
   }, []);
 
   const handleChange = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -693,6 +799,31 @@ export default function AdminPage() {
     setTopStats((current) => ({
       ...current,
       [table]: current[table].filter((_, rowIndex) => rowIndex !== index),
+    }));
+  };
+
+  const updateFanZonePollQuestion = (event: ChangeEvent<HTMLInputElement>) => {
+    setFanZonePoll((current) => ({ ...current, question: event.target.value }));
+  };
+
+  const updateFanZonePollOption = (index: number, field: 'label' | 'votes', value: string) => {
+    setFanZonePoll((current) => {
+      const nextOptions = [...current.options];
+      const option = { ...(nextOptions[index] ?? { label: `Option ${index + 1}`, votes: 0 }) };
+      if (field === 'label') {
+        option.label = value;
+      } else {
+        option.votes = Number(value) || 0;
+      }
+      nextOptions[index] = option;
+      return { ...current, options: nextOptions };
+    });
+  };
+
+  const resetFanZonePollVotes = () => {
+    setFanZonePoll((current) => ({
+      ...current,
+      options: current.options.map((option) => ({ ...option, votes: 0 })),
     }));
   };
 
@@ -998,6 +1129,101 @@ export default function AdminPage() {
     } finally {
       setTopStatsSaving(false);
     }
+  };
+
+  const saveFanZonePoll = async () => {
+    setFanZonePollError(null);
+    setFanZonePollSaving(true);
+
+    try {
+      const response = await fetch('/api/fan-zone/poll', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fanZonePoll),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setFanZonePoll(data);
+    } catch (saveError) {
+      console.error('Failed to save fan zone poll:', saveError);
+      setFanZonePollError('Impossible de sauvegarder le sondage.');
+    } finally {
+      setFanZonePollSaving(false);
+    }
+  };
+
+  const persistPredictions = async (nextItems: PredictionEntry[]) => {
+    setPredictionsError(null);
+    try {
+      const response = await fetch('/api/fan-zone/predictions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ predictions: nextItems }),
+      });
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+      const data = await response.json();
+      setPredictions(Array.isArray(data) ? data : []);
+    } catch (saveError) {
+      console.error('Failed to save predictions:', saveError);
+      setPredictionsError('Impossible de sauvegarder les pronostics.');
+    }
+  };
+
+  const togglePredictionApproval = async (id: number) => {
+    const nextItems = predictions.map((item) =>
+      item.id === id ? { ...item, approved: !item.approved } : item
+    );
+    setPredictions(nextItems);
+    await persistPredictions(nextItems);
+  };
+
+  const deletePrediction = async (id: number) => {
+    const confirmed = window.confirm('Supprimer ce pronostic ?');
+    if (!confirmed) return;
+    const nextItems = predictions.filter((item) => item.id !== id);
+    setPredictions(nextItems);
+    await persistPredictions(nextItems);
+  };
+
+  const persistChallenges = async (nextItems: ChallengeEntry[]) => {
+    setChallengesError(null);
+    try {
+      const response = await fetch('/api/fan-zone/challenges', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ challenges: nextItems }),
+      });
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+      const data = await response.json();
+      setChallenges(Array.isArray(data) ? data : []);
+    } catch (saveError) {
+      console.error('Failed to save challenges:', saveError);
+      setChallengesError('Impossible de sauvegarder les challenges.');
+    }
+  };
+
+  const toggleChallengeApproval = async (id: number) => {
+    const nextItems = challenges.map((item) =>
+      item.id === id ? { ...item, approved: !item.approved } : item
+    );
+    setChallenges(nextItems);
+    await persistChallenges(nextItems);
+  };
+
+  const deleteChallenge = async (id: number) => {
+    const confirmed = window.confirm('Supprimer ce challenge ?');
+    if (!confirmed) return;
+    const nextItems = challenges.filter((item) => item.id !== id);
+    setChallenges(nextItems);
+    await persistChallenges(nextItems);
   };
 
   const saveLiveOverrides = async () => {
@@ -2820,6 +3046,157 @@ export default function AdminPage() {
               </div>
             </FadeIn>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold text-white">Sondage Fan Zone</div>
+                  <p className="text-sm text-gray-400">Question + 3 choix, votes publics.</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={resetFanZonePollVotes}
+                    className="rounded-lg bg-white/10 px-4 py-2 text-xs font-semibold text-white hover:bg-white/20 transition-colors"
+                  >
+                    Reset votes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveFanZonePoll}
+                    disabled={fanZonePollSaving}
+                    className="rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-500 transition-colors disabled:opacity-60"
+                  >
+                    {fanZonePollSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+                  </button>
+                </div>
+              </div>
+              {fanZonePollError && <div className="text-sm text-red-300">{fanZonePollError}</div>}
+              {fanZonePollLoading ? (
+                <div className="text-gray-300">Chargement...</div>
+              ) : (
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Question"
+                    value={fanZonePoll.question}
+                    onChange={updateFanZonePollQuestion}
+                    className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                  <div className="space-y-2">
+                    {pollOptions.map((option, index) => (
+                      <div key={`poll-option-${index}`} className="grid gap-2 sm:grid-cols-[1fr_80px]">
+                        <input
+                          type="text"
+                          placeholder={`Option ${index + 1}`}
+                          value={option.label}
+                          onChange={(event) => updateFanZonePollOption(index, 'label', event.target.value)}
+                          className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Votes"
+                          value={option.votes}
+                          onChange={(event) => updateFanZonePollOption(index, 'votes', event.target.value)}
+                          className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.4}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">Pronostics (modération)</div>
+              {predictionsError && <div className="text-sm text-red-300">{predictionsError}</div>}
+              {predictionsLoading && <div className="text-gray-300">Chargement...</div>}
+              {!predictionsLoading && predictions.length === 0 && (
+                <div className="text-gray-300">Aucun pronostic pour le moment.</div>
+              )}
+              <div className="space-y-3">
+                {predictions.map((item) => (
+                  <div key={item.id} className="rounded-lg border border-white/10 p-3 flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-semibold truncate">
+                        {item.name} <span className="text-gray-400">{item.handle}</span>
+                      </div>
+                      <div className="text-sm text-gray-400">{item.homeScore} - {item.awayScore}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => togglePredictionApproval(item.id)}
+                        className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                      >
+                        {item.approved ? 'Retirer' : 'Publier'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deletePrediction(item.id)}
+                        className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.45}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">Matchday Challenge (modération)</div>
+              {challengesError && <div className="text-sm text-red-300">{challengesError}</div>}
+              {challengesLoading && <div className="text-gray-300">Chargement...</div>}
+              {!challengesLoading && challenges.length === 0 && (
+                <div className="text-gray-300">Aucun contenu pour le moment.</div>
+              )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                {challenges.map((item) => (
+                  <div key={item.id} className="rounded-lg border border-white/10 overflow-hidden">
+                    <div className="bg-white/5 p-3">
+                      <div className="text-white font-semibold">{item.name}</div>
+                      <div className="text-xs text-gray-400">{item.handle}</div>
+                      {item.caption && <p className="text-sm text-gray-300 mt-2">{item.caption}</p>}
+                      <a
+                        href={item.mediaUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex text-xs text-red-200 hover:text-red-100"
+                      >
+                        Ouvrir le media
+                      </a>
+                    </div>
+                    <div className="flex gap-2 p-3 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={() => toggleChallengeApproval(item.id)}
+                        className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                      >
+                        {item.approved ? 'Retirer' : 'Publier'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteChallenge(item.id)}
+                        className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
