@@ -14,7 +14,6 @@ const navigation = [
   { name: 'Transfers', href: '/transfers' },
   { name: 'History', href: '/history' },
   { name: 'Contact', href: '/contact' },
-  { name: 'Admin', href: '/admin' },
 ];
 
 export default function Header() {

@@ -62,6 +62,13 @@ interface FanWallPost {
   approved: boolean;
 }
 
+interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+}
+
 interface StandingRow {
   pos: number;
   club: string;
@@ -573,6 +580,15 @@ const defaultPredictions: PredictionEntry[] = [];
 const defaultChallenges: ChallengeEntry[] = [];
 
 export default function AdminPage() {
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+  const [adminAllowed, setAdminAllowed] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(true);
+  const [adminError, setAdminError] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminVerifyCode, setAdminVerifyCode] = useState('');
+  const [adminVerifyStatus, setAdminVerifyStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
+
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -688,6 +704,75 @@ export default function AdminPage() {
     }
     return options;
   }, [fanZonePoll.options]);
+
+  const loadAdminSession = async () => {
+    try {
+      setAdminLoading(true);
+      const response = await fetch('/api/admin/me');
+      if (!response.ok) {
+        setAdminUser(null);
+        setAdminAllowed(false);
+        return;
+      }
+      const data = await response.json();
+      setAdminUser(data?.user ?? null);
+      setAdminAllowed(Boolean(data?.isAdmin));
+    } catch (loadError) {
+      console.error('Failed to load admin session:', loadError);
+      setAdminUser(null);
+      setAdminAllowed(false);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const handleAdminLogin = async () => {
+    setAdminError('');
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+      });
+      if (!response.ok) {
+        setAdminError('Identifiants invalides.');
+        return;
+      }
+      setAdminPassword('');
+      await loadAdminSession();
+    } catch (authError) {
+      console.error('Admin login error:', authError);
+      setAdminError('Impossible de se connecter.');
+    }
+  };
+
+  const handleAdminVerify = async () => {
+    if (!adminUser) return;
+    setAdminVerifyStatus('sending');
+    try {
+      const response = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminUser.email, code: adminVerifyCode }),
+      });
+      if (!response.ok) {
+        setAdminVerifyStatus('error');
+        return;
+      }
+      setAdminVerifyStatus('ok');
+      setAdminVerifyCode('');
+      await loadAdminSession();
+    } catch (verifyError) {
+      console.error('Admin verify error:', verifyError);
+      setAdminVerifyStatus('error');
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setAdminUser(null);
+    setAdminAllowed(false);
+  };
 
   const loadArticles = async () => {
     try {
@@ -942,6 +1027,13 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    loadAdminSession();
+  }, []);
+
+  useEffect(() => {
+    if (!adminAllowed || !adminUser || !adminUser.emailVerified) {
+      return;
+    }
     loadArticles();
     loadMatches();
     loadSquad();
@@ -957,7 +1049,7 @@ export default function AdminPage() {
     loadFanZonePoll();
     loadPredictions();
     loadChallenges();
-  }, []);
+  }, [adminAllowed, adminUser]);
 
   const handleChange = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -2086,6 +2178,101 @@ export default function AdminPage() {
   const previewImage = form.image.trim() || '/api/placeholder/600/400';
   const previewPlayerImage = playerForm.image.trim() || '/api/placeholder/300/400';
   const previewStaffImage = staffForm.image.trim() || '/api/placeholder/300/400';
+
+  if (adminLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="glass rounded-2xl p-6 text-gray-300">Chargement de la session admin...</div>
+      </div>
+    );
+  }
+
+  if (!adminUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="glass rounded-2xl p-8 w-full max-w-md space-y-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-white">Connexion admin</h1>
+            <p className="text-sm text-gray-400">Acces reserve. Email autorise via ADMIN_EMAILS.</p>
+          </div>
+          <div className="space-y-3">
+            <input
+              type="email"
+              placeholder="Email admin"
+              value={adminEmail}
+              onChange={(event) => setAdminEmail(event.target.value)}
+              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+            />
+            <input
+              type="password"
+              placeholder="Mot de passe"
+              value={adminPassword}
+              onChange={(event) => setAdminPassword(event.target.value)}
+              className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+            />
+          </div>
+          {adminError && <p className="text-xs text-red-200">{adminError}</p>}
+          <button
+            type="button"
+            onClick={handleAdminLogin}
+            className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
+          >
+            Se connecter
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminAllowed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="glass rounded-2xl p-8 w-full max-w-md space-y-3 text-center">
+          <h1 className="text-2xl font-semibold text-white">Acces refuse</h1>
+          <p className="text-sm text-gray-400">
+            Ce compte n&apos;est pas autorise pour l&apos;admin.
+          </p>
+          <button
+            type="button"
+            onClick={handleAdminLogout}
+            className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors"
+          >
+            Se deconnecter
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminUser.emailVerified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="glass rounded-2xl p-8 w-full max-w-md space-y-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-white">Verification requise</h1>
+            <p className="text-sm text-gray-400">{adminUser.email}</p>
+          </div>
+          <input
+            type="text"
+            placeholder="Code de verification"
+            value={adminVerifyCode}
+            onChange={(event) => setAdminVerifyCode(event.target.value)}
+            className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+          />
+          <button
+            type="button"
+            onClick={handleAdminVerify}
+            className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
+          >
+            {adminVerifyStatus === 'sending' ? 'Verification...' : 'Verifier'}
+          </button>
+          {adminVerifyStatus === 'error' && (
+            <p className="text-xs text-red-200">Code invalide ou expire.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
