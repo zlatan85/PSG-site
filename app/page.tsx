@@ -65,7 +65,7 @@ export default async function Home() {
                   <img
                     src={homeSettings.heroImage || latestArticle.image || '/api/placeholder/1600/900'}
                     alt={latestArticle.title}
-                    className="h-[60vh] w-full object-cover"
+                    className="h-[60vh] w-full object-cover lg:object-contain lg:bg-black/40"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-8 sm:p-12">
