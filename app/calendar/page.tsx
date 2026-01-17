@@ -27,6 +27,20 @@ interface StandingRow {
   diff: string;
 }
 
+interface TopScorerRow {
+  pos: number;
+  player: string;
+  club: string;
+  goals: number;
+}
+
+interface TopAssistRow {
+  pos: number;
+  player: string;
+  club: string;
+  assists: number;
+}
+
 const defaultStandings = {
   ligue1: [
     { pos: 1, club: 'PSG', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
@@ -44,12 +58,27 @@ const defaultStandings = {
   ],
 };
 
+const defaultTopStats = {
+  scorers: [
+    { pos: 1, player: 'K. Mbappe', club: 'PSG', goals: 0 },
+    { pos: 2, player: 'O. Dembele', club: 'PSG', goals: 0 },
+    { pos: 3, player: 'R. Kolo Muani', club: 'PSG', goals: 0 },
+  ],
+  assists: [
+    { pos: 1, player: 'A. Hakimi', club: 'PSG', assists: 0 },
+    { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
+    { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },
+  ],
+};
+
 export default function CalendarPage() {
   const [filter, setFilter] = useState('all');
   const [matches, setMatches] = useState<MatchEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [standings, setStandings] = useState(defaultStandings);
   const [standingsLoading, setStandingsLoading] = useState(true);
+  const [topStats, setTopStats] = useState(defaultTopStats);
+  const [topStatsLoading, setTopStatsLoading] = useState(true);
 
   useEffect(() => {
     const loadMatches = async () => {
@@ -83,6 +112,24 @@ export default function CalendarPage() {
     };
 
     loadStandings();
+  }, []);
+
+  useEffect(() => {
+    const loadTopStats = async () => {
+      try {
+        const response = await fetch('/api/top-stats');
+        const data = await response.json();
+        if (data?.scorers && data?.assists) {
+          setTopStats(data);
+        }
+      } catch (error) {
+        console.error('Failed to load top stats:', error);
+      } finally {
+        setTopStatsLoading(false);
+      }
+    };
+
+    loadTopStats();
   }, []);
 
   const filteredMatches = matches.filter(match => {
@@ -298,6 +345,74 @@ export default function CalendarPage() {
                         <td className="py-2 text-right">{row.n}</td>
                         <td className="py-2 text-right">{row.p}</td>
                         <td className="py-2 text-right">{row.diff}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ScaleIn>
+        </div>
+
+        <div className="mt-12 grid gap-8 lg:grid-cols-2">
+          <ScaleIn delay={0.35}>
+            <div className="glass rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-white">Classement Buteurs</h2>
+                <span className="text-xs text-gray-400">
+                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-300">
+                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                    <tr>
+                      <th className="py-2 text-left">#</th>
+                      <th className="py-2 text-left">Joueur</th>
+                      <th className="py-2 text-left">Club</th>
+                      <th className="py-2 text-right">Buts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topStats.scorers.map((row) => (
+                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
+                        <td className="py-2">{row.pos}</td>
+                        <td className="py-2 text-white">{row.player}</td>
+                        <td className="py-2">{row.club}</td>
+                        <td className="py-2 text-right text-white font-semibold">{row.goals}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ScaleIn>
+
+          <ScaleIn delay={0.4}>
+            <div className="glass rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-white">Classement Passeurs</h2>
+                <span className="text-xs text-gray-400">
+                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-300">
+                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                    <tr>
+                      <th className="py-2 text-left">#</th>
+                      <th className="py-2 text-left">Joueur</th>
+                      <th className="py-2 text-left">Club</th>
+                      <th className="py-2 text-right">Passes D</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topStats.assists.map((row) => (
+                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
+                        <td className="py-2">{row.pos}</td>
+                        <td className="py-2 text-white">{row.player}</td>
+                        <td className="py-2">{row.club}</td>
+                        <td className="py-2 text-right text-white font-semibold">{row.assists}</td>
                       </tr>
                     ))}
                   </tbody>

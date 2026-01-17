@@ -98,3 +98,8 @@ model Standings {
   id      Int  @id @default(autoincrement())
   payload Json
 }
+
+model TopStats {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}

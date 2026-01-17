@@ -78,6 +78,24 @@ interface StandingsPayload {
   championsLeague: StandingRow[];
 }
 
+interface TopScorerRow {
+  pos: number;
+  player: string;
+  club: string;
+  goals: number;
+}
+
+interface TopAssistRow {
+  pos: number;
+  player: string;
+  club: string;
+  assists: number;
+}
+
+interface TopStatsPayload {
+  scorers: TopScorerRow[];
+  assists: TopAssistRow[];
+}
 interface HomeSettings {
   heroLabel: string;
   heroTitle: string;
@@ -221,6 +239,19 @@ const defaultStandings: StandingsPayload = {
   ],
 };
 
+const defaultTopStats: TopStatsPayload = {
+  scorers: [
+    { pos: 1, player: 'K. Mbappe', club: 'PSG', goals: 0 },
+    { pos: 2, player: 'O. Dembele', club: 'PSG', goals: 0 },
+    { pos: 3, player: 'R. Kolo Muani', club: 'PSG', goals: 0 },
+  ],
+  assists: [
+    { pos: 1, player: 'A. Hakimi', club: 'PSG', assists: 0 },
+    { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
+    { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },
+  ],
+};
+
 export default function AdminPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -270,6 +301,10 @@ export default function AdminPage() {
   const [standingsLoading, setStandingsLoading] = useState(true);
   const [standingsSaving, setStandingsSaving] = useState(false);
   const [standingsError, setStandingsError] = useState<string | null>(null);
+  const [topStats, setTopStats] = useState<TopStatsPayload>(defaultTopStats);
+  const [topStatsLoading, setTopStatsLoading] = useState(true);
+  const [topStatsSaving, setTopStatsSaving] = useState(false);
+  const [topStatsError, setTopStatsError] = useState<string | null>(null);
 
   const sortedArticles = useMemo(
     () => [...articles].sort((a, b) => b.date.localeCompare(a.date)),
@@ -425,6 +460,24 @@ export default function AdminPage() {
     }
   };
 
+  const loadTopStats = async () => {
+    try {
+      setTopStatsLoading(true);
+      const response = await fetch('/api/top-stats');
+      const data = await response.json();
+      if (data?.scorers && data?.assists) {
+        setTopStats(data);
+      } else {
+        setTopStats(defaultTopStats);
+      }
+    } catch (loadError) {
+      console.error('Failed to load top stats:', loadError);
+      setTopStatsError('Impossible de charger les tops.');
+    } finally {
+      setTopStatsLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadArticles();
     loadMatches();
@@ -434,6 +487,7 @@ export default function AdminPage() {
     loadHomeSettings();
     loadFooterSettings();
     loadStandings();
+    loadTopStats();
   }, []);
 
   const handleChange = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -531,6 +585,44 @@ export default function AdminPage() {
 
   const removeStandingsRow = (table: keyof StandingsPayload, index: number) => {
     setStandings((current) => ({
+      ...current,
+      [table]: current[table].filter((_, rowIndex) => rowIndex !== index),
+    }));
+  };
+
+  const updateTopStatsRow = (
+    table: keyof TopStatsPayload,
+    index: number,
+    field: keyof (TopScorerRow & TopAssistRow),
+    value: string
+  ) => {
+    setTopStats((current) => {
+      const nextTable = [...current[table]];
+      const row = { ...nextTable[index] } as TopScorerRow & TopAssistRow;
+      if (field === 'player' || field === 'club') {
+        row[field] = value;
+      } else {
+        row[field] = Number(value);
+      }
+      nextTable[index] = row;
+      return { ...current, [table]: nextTable };
+    });
+  };
+
+  const addTopStatsRow = (table: keyof TopStatsPayload) => {
+    setTopStats((current) => ({
+      ...current,
+      [table]: [
+        ...current[table],
+        table === 'scorers'
+          ? { pos: current[table].length + 1, player: 'Joueur', club: 'Club', goals: 0 }
+          : { pos: current[table].length + 1, player: 'Joueur', club: 'Club', assists: 0 },
+      ],
+    }));
+  };
+
+  const removeTopStatsRow = (table: keyof TopStatsPayload, index: number) => {
+    setTopStats((current) => ({
       ...current,
       [table]: current[table].filter((_, rowIndex) => rowIndex !== index),
     }));
@@ -804,6 +896,33 @@ export default function AdminPage() {
       setStandingsError('Impossible de sauvegarder les classements.');
     } finally {
       setStandingsSaving(false);
+    }
+  };
+
+  const saveTopStats = async () => {
+    setTopStatsError(null);
+    setTopStatsSaving(true);
+
+    try {
+      const response = await fetch('/api/top-stats', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(topStats),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      if (data?.scorers && data?.assists) {
+        setTopStats(data);
+      }
+    } catch (saveError) {
+      console.error('Failed to save top stats:', saveError);
+      setTopStatsError('Impossible de sauvegarder les tops.');
+    } finally {
+      setTopStatsSaving(false);
     }
   };
 
@@ -1834,6 +1953,177 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => removeStandingsRow('championsLeague', index)}
+                                className="text-xs text-red-200 hover:text-red-100"
+                              >
+                                Supprimer
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.35}>
+            <div className="glass rounded-lg p-6 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold text-white">Buteurs & Passeurs</div>
+                  <p className="text-sm text-gray-400">Classements manuels pour la page calendrier.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={saveTopStats}
+                  disabled={topStatsSaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {topStatsSaving ? 'Sauvegarde...' : 'Sauvegarder les tops'}
+                </button>
+              </div>
+
+              {topStatsError && <div className="text-sm text-red-300">{topStatsError}</div>}
+
+              <div className="grid gap-8 lg:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold">Classement Buteurs</h3>
+                    <button
+                      type="button"
+                      onClick={() => addTopStatsRow('scorers')}
+                      className="text-xs text-red-200 hover:text-red-100"
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-gray-300">
+                      <thead className="text-[11px] uppercase text-gray-400 border-b border-white/10">
+                        <tr>
+                          <th className="py-2 text-left">#</th>
+                          <th className="py-2 text-left">Joueur</th>
+                          <th className="py-2 text-left">Club</th>
+                          <th className="py-2 text-right">Buts</th>
+                          <th className="py-2 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topStats.scorers.map((row, index) => (
+                          <tr key={`scorer-${index}`} className="border-b border-white/5 last:border-0">
+                            <td className="py-2 pr-2">
+                              <input
+                                type="number"
+                                value={row.pos}
+                                onChange={(event) => updateTopStatsRow('scorers', index, 'pos', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.player}
+                                onChange={(event) => updateTopStatsRow('scorers', index, 'player', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.club}
+                                onChange={(event) => updateTopStatsRow('scorers', index, 'club', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.goals}
+                                onChange={(event) => updateTopStatsRow('scorers', index, 'goals', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 text-right">
+                              <button
+                                type="button"
+                                onClick={() => removeTopStatsRow('scorers', index)}
+                                className="text-xs text-red-200 hover:text-red-100"
+                              >
+                                Supprimer
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold">Classement Passeurs</h3>
+                    <button
+                      type="button"
+                      onClick={() => addTopStatsRow('assists')}
+                      className="text-xs text-red-200 hover:text-red-100"
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-gray-300">
+                      <thead className="text-[11px] uppercase text-gray-400 border-b border-white/10">
+                        <tr>
+                          <th className="py-2 text-left">#</th>
+                          <th className="py-2 text-left">Joueur</th>
+                          <th className="py-2 text-left">Club</th>
+                          <th className="py-2 text-right">Passes D</th>
+                          <th className="py-2 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topStats.assists.map((row, index) => (
+                          <tr key={`assist-${index}`} className="border-b border-white/5 last:border-0">
+                            <td className="py-2 pr-2">
+                              <input
+                                type="number"
+                                value={row.pos}
+                                onChange={(event) => updateTopStatsRow('assists', index, 'pos', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.player}
+                                onChange={(event) => updateTopStatsRow('assists', index, 'player', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.club}
+                                onChange={(event) => updateTopStatsRow('assists', index, 'club', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.assists}
+                                onChange={(event) => updateTopStatsRow('assists', index, 'assists', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 text-right">
+                              <button
+                                type="button"
+                                onClick={() => removeTopStatsRow('assists', index)}
                                 className="text-xs text-red-200 hover:text-red-100"
                               >
                                 Supprimer
