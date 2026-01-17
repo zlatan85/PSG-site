@@ -1,5 +1,6 @@
 import { FadeIn, ScaleIn } from '../../components/MotionWrapper';
 import { readLiveMatch } from '../../lib/live-match-store';
+import { readLiveOverrides } from '../../lib/live-overrides-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,7 @@ const eventBadge = (type: string) => {
 
 export default async function LiveMatchPage() {
   const liveMatch = await readLiveMatch();
+  const liveOverrides = await readLiveOverrides();
 
   if (!liveMatch) {
     return (
@@ -42,7 +44,55 @@ export default async function LiveMatchPage() {
     );
   }
 
-  const { home, away } = liveMatch;
+  const hasOverrides = !!(
+    liveOverrides &&
+    (liveOverrides.startersHome.length > 0 ||
+      liveOverrides.benchHome.length > 0 ||
+      liveOverrides.awayName ||
+      liveOverrides.competition ||
+      liveOverrides.stadium ||
+      liveOverrides.referee ||
+      liveOverrides.kickoff ||
+      liveOverrides.homeScore !== 0 ||
+      liveOverrides.awayScore !== 0)
+  );
+
+  const status = hasOverrides ? liveOverrides!.status : liveMatch.status;
+  const minute = hasOverrides ? liveOverrides!.minute : liveMatch.minute;
+  const period = hasOverrides ? liveOverrides!.period : liveMatch.period;
+  const competition = hasOverrides ? liveOverrides!.competition || liveMatch.competition : liveMatch.competition;
+  const stadium = hasOverrides ? liveOverrides!.stadium || liveMatch.stadium : liveMatch.stadium;
+  const referee = hasOverrides ? liveOverrides!.referee || liveMatch.referee : liveMatch.referee;
+  const kickoff = hasOverrides ? liveOverrides!.kickoff || liveMatch.kickoff : liveMatch.kickoff;
+  const home = hasOverrides
+    ? { ...liveMatch.home, name: liveOverrides!.homeName || liveMatch.home.name, score: liveOverrides!.homeScore }
+    : liveMatch.home;
+  const away = hasOverrides
+    ? { ...liveMatch.away, name: liveOverrides!.awayName || liveMatch.away.name, score: liveOverrides!.awayScore }
+    : liveMatch.away;
+
+  const starters = hasOverrides ? liveOverrides!.startersHome : liveMatch.lineups.home;
+  const bench = hasOverrides ? liveOverrides!.benchHome : [];
+  const formation = hasOverrides ? liveOverrides!.formation : '4-3-3';
+
+  const buildLineup = (players: string[], shape: string) => {
+    if (players.length === 0) return { gk: '', lines: [] as string[][] };
+    const gk = players[0] ?? '';
+    const parts = shape
+      .split('-')
+      .map((part) => Number(part))
+      .filter((num) => Number.isFinite(num) && num > 0);
+    let cursor = 1;
+    const lines = parts.map((count) => {
+      const line = players.slice(cursor, cursor + count);
+      cursor += count;
+      return line;
+    });
+    return { gk, lines };
+  };
+
+  const lineup = buildLineup(starters, formation);
+  const displayLines = [...lineup.lines].reverse();
 
   return (
     <div className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
@@ -51,11 +101,11 @@ export default async function LiveMatchPage() {
           <div className="text-center space-y-4">
             <p className="inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-1 text-sm font-semibold text-red-200">
               <span className="inline-flex h-2 w-2 rounded-full bg-red-400 matchday-blink" />
-              LIVE {liveMatch.minute}&apos; {liveMatch.period}
+              LIVE {minute}&apos; {period}
             </p>
             <h1 className="text-4xl font-bold text-white sm:text-5xl">Live Match Center</h1>
             <p className="text-gray-300">
-              {liveMatch.competition} · {liveMatch.stadium} · Arbitre {liveMatch.referee}
+              {competition} · {stadium} · Arbitre {referee}
             </p>
           </div>
         </FadeIn>
@@ -72,7 +122,7 @@ export default async function LiveMatchPage() {
                   {home.score} - {away.score}
                 </div>
                 <div className="text-sm text-gray-300">
-                  Coup d&apos;envoi {new Date(liveMatch.kickoff).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  Coup d&apos;envoi {new Date(kickoff).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
               <div className="text-center">
@@ -163,16 +213,43 @@ export default async function LiveMatchPage() {
           <ScaleIn delay={0.45}>
             <div className="glass rounded-2xl p-8 space-y-6">
               <div>
-                <h3 className="text-xl font-semibold text-white mb-4">Compos probables</h3>
-                <div className="space-y-4 text-sm text-gray-200">
-                  <div>
-                    <p className="text-white font-semibold mb-2">{home.name}</p>
-                    <p className="text-gray-300">{liveMatch.lineups.home.join(' · ')}</p>
+                <h3 className="text-xl font-semibold text-white mb-4">Onze de depart</h3>
+                <div className="space-y-4">
+                  <div className="text-sm text-gray-300">
+                    {home.name} · Formation {formation}
                   </div>
-                  <div>
-                    <p className="text-white font-semibold mb-2">{away.name}</p>
-                    <p className="text-gray-300">{liveMatch.lineups.away.join(' · ')}</p>
+                  <div className="rounded-2xl bg-[#0b1220] border border-white/10 p-4">
+                    <div className="relative rounded-xl bg-gradient-to-b from-[#10263d] to-[#0a1426] p-4">
+                      <div className="absolute inset-0 rounded-xl border border-white/5" />
+                      <div className="relative space-y-4">
+                        {displayLines.map((line, lineIndex) => (
+                          <div key={`line-${lineIndex}`} className="flex justify-evenly gap-2">
+                            {line.map((player) => (
+                              <div
+                                key={player}
+                                className="rounded-full bg-white/10 px-3 py-1 text-xs text-white shadow-sm"
+                              >
+                                {player}
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                        {lineup.gk && (
+                          <div className="flex justify-center">
+                            <div className="rounded-full bg-red-500/20 px-3 py-1 text-xs text-red-200 shadow-sm">
+                              {lineup.gk}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                  {bench.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-300 mb-2">Remplacants</p>
+                      <p className="text-sm text-gray-400">{bench.join(' · ')}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

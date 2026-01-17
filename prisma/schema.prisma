@@ -103,3 +103,8 @@ model TopStats {
   id      Int  @id @default(autoincrement())
   payload Json
 }
+
+model LiveOverrides {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}

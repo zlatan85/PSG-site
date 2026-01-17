@@ -96,6 +96,23 @@ interface TopStatsPayload {
   scorers: TopScorerRow[];
   assists: TopAssistRow[];
 }
+
+interface LiveOverridesForm {
+  status: 'live' | 'upcoming' | 'finished';
+  minute: string;
+  period: string;
+  competition: string;
+  stadium: string;
+  referee: string;
+  kickoff: string;
+  homeName: string;
+  awayName: string;
+  homeScore: string;
+  awayScore: string;
+  formation: string;
+  startersHomeText: string;
+  benchHomeText: string;
+}
 interface HomeSettings {
   heroLabel: string;
   heroTitle: string;
@@ -252,6 +269,23 @@ const defaultTopStats: TopStatsPayload = {
   ],
 };
 
+const defaultLiveOverridesForm: LiveOverridesForm = {
+  status: 'live',
+  minute: '0',
+  period: '1H',
+  competition: '',
+  stadium: '',
+  referee: '',
+  kickoff: '',
+  homeName: 'PSG',
+  awayName: '',
+  homeScore: '0',
+  awayScore: '0',
+  formation: '4-3-3',
+  startersHomeText: '',
+  benchHomeText: '',
+};
+
 export default function AdminPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -305,6 +339,10 @@ export default function AdminPage() {
   const [topStatsLoading, setTopStatsLoading] = useState(true);
   const [topStatsSaving, setTopStatsSaving] = useState(false);
   const [topStatsError, setTopStatsError] = useState<string | null>(null);
+  const [liveOverridesForm, setLiveOverridesForm] = useState<LiveOverridesForm>(defaultLiveOverridesForm);
+  const [liveOverridesLoading, setLiveOverridesLoading] = useState(true);
+  const [liveOverridesSaving, setLiveOverridesSaving] = useState(false);
+  const [liveOverridesError, setLiveOverridesError] = useState<string | null>(null);
 
   const sortedArticles = useMemo(
     () => [...articles].sort((a, b) => b.date.localeCompare(a.date)),
@@ -478,6 +516,35 @@ export default function AdminPage() {
     }
   };
 
+  const loadLiveOverrides = async () => {
+    try {
+      setLiveOverridesLoading(true);
+      const response = await fetch('/api/live-overrides');
+      const data = await response.json();
+      setLiveOverridesForm({
+        status: data?.status ?? defaultLiveOverridesForm.status,
+        minute: String(data?.minute ?? defaultLiveOverridesForm.minute),
+        period: data?.period ?? defaultLiveOverridesForm.period,
+        competition: data?.competition ?? '',
+        stadium: data?.stadium ?? '',
+        referee: data?.referee ?? '',
+        kickoff: data?.kickoff ?? '',
+        homeName: data?.homeName ?? 'PSG',
+        awayName: data?.awayName ?? '',
+        homeScore: String(data?.homeScore ?? '0'),
+        awayScore: String(data?.awayScore ?? '0'),
+        formation: data?.formation ?? '4-3-3',
+        startersHomeText: Array.isArray(data?.startersHome) ? data.startersHome.join('\n') : '',
+        benchHomeText: Array.isArray(data?.benchHome) ? data.benchHome.join('\n') : '',
+      });
+    } catch (loadError) {
+      console.error('Failed to load live overrides:', loadError);
+      setLiveOverridesError('Impossible de charger la compo manuelle.');
+    } finally {
+      setLiveOverridesLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadArticles();
     loadMatches();
@@ -488,6 +555,7 @@ export default function AdminPage() {
     loadFooterSettings();
     loadStandings();
     loadTopStats();
+    loadLiveOverrides();
   }, []);
 
   const handleChange = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -626,6 +694,12 @@ export default function AdminPage() {
       ...current,
       [table]: current[table].filter((_, rowIndex) => rowIndex !== index),
     }));
+  };
+
+  const handleLiveOverridesChange = (field: keyof LiveOverridesForm) => (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setLiveOverridesForm((current) => ({ ...current, [field]: event.target.value }));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -923,6 +997,69 @@ export default function AdminPage() {
       setTopStatsError('Impossible de sauvegarder les tops.');
     } finally {
       setTopStatsSaving(false);
+    }
+  };
+
+  const saveLiveOverrides = async () => {
+    setLiveOverridesError(null);
+    setLiveOverridesSaving(true);
+
+    const normalizeList = (value: string) =>
+      value
+        .split(/\r?\n|;/)
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+
+    const payload = {
+      status: liveOverridesForm.status,
+      minute: Number(liveOverridesForm.minute) || 0,
+      period: liveOverridesForm.period.trim(),
+      competition: liveOverridesForm.competition.trim(),
+      stadium: liveOverridesForm.stadium.trim(),
+      referee: liveOverridesForm.referee.trim(),
+      kickoff: liveOverridesForm.kickoff.trim(),
+      homeName: liveOverridesForm.homeName.trim() || 'PSG',
+      awayName: liveOverridesForm.awayName.trim(),
+      homeScore: Number(liveOverridesForm.homeScore) || 0,
+      awayScore: Number(liveOverridesForm.awayScore) || 0,
+      formation: liveOverridesForm.formation.trim() || '4-3-3',
+      startersHome: normalizeList(liveOverridesForm.startersHomeText),
+      benchHome: normalizeList(liveOverridesForm.benchHomeText),
+    };
+
+    try {
+      const response = await fetch('/api/live-overrides', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      setLiveOverridesForm({
+        status: data?.status ?? payload.status,
+        minute: String(data?.minute ?? payload.minute),
+        period: data?.period ?? payload.period,
+        competition: data?.competition ?? payload.competition,
+        stadium: data?.stadium ?? payload.stadium,
+        referee: data?.referee ?? payload.referee,
+        kickoff: data?.kickoff ?? payload.kickoff,
+        homeName: data?.homeName ?? payload.homeName,
+        awayName: data?.awayName ?? payload.awayName,
+        homeScore: String(data?.homeScore ?? payload.homeScore),
+        awayScore: String(data?.awayScore ?? payload.awayScore),
+        formation: data?.formation ?? payload.formation,
+        startersHomeText: Array.isArray(data?.startersHome) ? data.startersHome.join('\n') : payload.startersHome.join('\n'),
+        benchHomeText: Array.isArray(data?.benchHome) ? data.benchHome.join('\n') : payload.benchHome.join('\n'),
+      });
+    } catch (saveError) {
+      console.error('Failed to save live overrides:', saveError);
+      setLiveOverridesError('Impossible de sauvegarder la compo.');
+    } finally {
+      setLiveOverridesSaving(false);
     }
   };
 
@@ -1398,6 +1535,141 @@ export default function AdminPage() {
               </div>
             </FadeIn>
           </div>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold text-white">Live Center - Compo manuelle</div>
+                  <p className="text-sm text-gray-400">Score, statut et onze de depart pour le live.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={saveLiveOverrides}
+                  disabled={liveOverridesSaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {liveOverridesSaving ? 'Sauvegarde...' : 'Sauvegarder la compo'}
+                </button>
+              </div>
+
+              {liveOverridesError && <div className="text-sm text-red-300">{liveOverridesError}</div>}
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <select
+                  value={liveOverridesForm.status}
+                  onChange={handleLiveOverridesChange('status')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  <option value="live" className="bg-blue-900">Live</option>
+                  <option value="upcoming" className="bg-blue-900">A venir</option>
+                  <option value="finished" className="bg-blue-900">Termine</option>
+                </select>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    type="number"
+                    placeholder="Minute"
+                    value={liveOverridesForm.minute}
+                    onChange={handleLiveOverridesChange('minute')}
+                    className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Periode (1H/2H)"
+                    value={liveOverridesForm.period}
+                    onChange={handleLiveOverridesChange('period')}
+                    className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Competition"
+                  value={liveOverridesForm.competition}
+                  onChange={handleLiveOverridesChange('competition')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Stade"
+                  value={liveOverridesForm.stadium}
+                  onChange={handleLiveOverridesChange('stadium')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Arbitre"
+                  value={liveOverridesForm.referee}
+                  onChange={handleLiveOverridesChange('referee')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Coup d'envoi (YYYY-MM-DDTHH:mm)"
+                  value={liveOverridesForm.kickoff}
+                  onChange={handleLiveOverridesChange('kickoff')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <input
+                  type="text"
+                  placeholder="Equipe domicile"
+                  value={liveOverridesForm.homeName}
+                  onChange={handleLiveOverridesChange('homeName')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Equipe exterieure"
+                  value={liveOverridesForm.awayName}
+                  onChange={handleLiveOverridesChange('awayName')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="number"
+                  placeholder="Score domicile"
+                  value={liveOverridesForm.homeScore}
+                  onChange={handleLiveOverridesChange('homeScore')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <input
+                  type="number"
+                  placeholder="Score exterieur"
+                  value={liveOverridesForm.awayScore}
+                  onChange={handleLiveOverridesChange('awayScore')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <input
+                  type="text"
+                  placeholder="Formation (ex: 4-3-3)"
+                  value={liveOverridesForm.formation}
+                  onChange={handleLiveOverridesChange('formation')}
+                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <div className="text-xs text-gray-400 flex items-center">
+                  Un joueur par ligne (11 titulaires).
+                </div>
+                <textarea
+                  placeholder="Titulaires (1 par ligne)"
+                  value={liveOverridesForm.startersHomeText}
+                  onChange={handleLiveOverridesChange('startersHomeText')}
+                  className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+                <textarea
+                  placeholder="Remplacants (1 par ligne)"
+                  value={liveOverridesForm.benchHomeText}
+                  onChange={handleLiveOverridesChange('benchHomeText')}
+                  className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+            </div>
+          </FadeIn>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
