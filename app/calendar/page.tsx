@@ -44,6 +44,24 @@ export default function CalendarPage() {
     return match.competition.toLowerCase().includes(filter.toLowerCase());
   });
 
+  const sortedMatches = [...filteredMatches].sort((a, b) => {
+    const aTime = new Date(`${a.date}T${a.time}`).getTime();
+    const bTime = new Date(`${b.date}T${b.time}`).getTime();
+
+    if (filter === 'played') {
+      return bTime - aTime;
+    }
+
+    if (filter === 'all') {
+      if (a.status !== b.status) {
+        return a.status === 'upcoming' ? -1 : 1;
+      }
+      return a.status === 'upcoming' ? aTime - bTime : bTime - aTime;
+    }
+
+    return aTime - bTime;
+  });
+
   const getResultColor = (result?: string) => {
     switch (result) {
       case 'W': return 'text-green-400';
@@ -98,7 +116,7 @@ export default function CalendarPage() {
 
         {/* Matches List */}
         <div className="space-y-4">
-          {filteredMatches.map((match, index) => (
+          {sortedMatches.map((match, index) => (
             <ScaleIn key={match.id} delay={0.6 + index * 0.1}>
               <div className="glass rounded-lg p-6 border border-white/10 hover:border-white/20 transition-colors">
                 <div className="flex items-center justify-between flex-wrap gap-4">
@@ -149,13 +167,105 @@ export default function CalendarPage() {
           ))}
         </div>
 
-        {filteredMatches.length === 0 && (
+        {sortedMatches.length === 0 && (
           <FadeIn delay={0.8}>
             <div className="text-center py-12">
               <p className="text-gray-300 text-lg">Aucun match trouvé pour ce filtre.</p>
             </div>
           </FadeIn>
         )}
+
+        <div className="mt-16 grid gap-8 lg:grid-cols-2">
+          <ScaleIn delay={0.2}>
+            <div className="glass rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-white">Classement Ligue 1</h2>
+                <span className="text-xs text-gray-400">Mise a jour manuelle</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-300">
+                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                    <tr>
+                      <th className="py-2 text-left">#</th>
+                      <th className="py-2 text-left">Club</th>
+                      <th className="py-2 text-right">Pts</th>
+                      <th className="py-2 text-right">J</th>
+                      <th className="py-2 text-right">G</th>
+                      <th className="py-2 text-right">N</th>
+                      <th className="py-2 text-right">P</th>
+                      <th className="py-2 text-right">Diff</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { pos: 1, club: 'PSG', pts: 52, j: 22, g: 16, n: 4, p: 2, diff: '+28' },
+                      { pos: 2, club: 'Monaco', pts: 47, j: 22, g: 14, n: 5, p: 3, diff: '+19' },
+                      { pos: 3, club: 'Lille', pts: 41, j: 22, g: 12, n: 5, p: 5, diff: '+12' },
+                      { pos: 4, club: 'Marseille', pts: 39, j: 22, g: 11, n: 6, p: 5, diff: '+9' },
+                      { pos: 5, club: 'Rennes', pts: 36, j: 22, g: 10, n: 6, p: 6, diff: '+6' },
+                      { pos: 6, club: 'Lyon', pts: 34, j: 22, g: 9, n: 7, p: 6, diff: '+4' },
+                    ].map((row) => (
+                      <tr key={row.club} className="border-b border-white/5 last:border-0">
+                        <td className="py-2">{row.pos}</td>
+                        <td className={`py-2 ${row.club === 'PSG' ? 'text-red-300 font-semibold' : ''}`}>{row.club}</td>
+                        <td className="py-2 text-right text-white font-semibold">{row.pts}</td>
+                        <td className="py-2 text-right">{row.j}</td>
+                        <td className="py-2 text-right">{row.g}</td>
+                        <td className="py-2 text-right">{row.n}</td>
+                        <td className="py-2 text-right">{row.p}</td>
+                        <td className="py-2 text-right">{row.diff}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ScaleIn>
+
+          <ScaleIn delay={0.3}>
+            <div className="glass rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-white">Classement Ligue des Champions</h2>
+                <span className="text-xs text-gray-400">Groupe F</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-300">
+                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                    <tr>
+                      <th className="py-2 text-left">#</th>
+                      <th className="py-2 text-left">Club</th>
+                      <th className="py-2 text-right">Pts</th>
+                      <th className="py-2 text-right">J</th>
+                      <th className="py-2 text-right">G</th>
+                      <th className="py-2 text-right">N</th>
+                      <th className="py-2 text-right">P</th>
+                      <th className="py-2 text-right">Diff</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { pos: 1, club: 'PSG', pts: 12, j: 5, g: 4, n: 0, p: 1, diff: '+6' },
+                      { pos: 2, club: 'Dortmund', pts: 9, j: 5, g: 3, n: 0, p: 2, diff: '+3' },
+                      { pos: 3, club: 'Milan', pts: 4, j: 5, g: 1, n: 1, p: 3, diff: '-4' },
+                      { pos: 4, club: 'Newcastle', pts: 4, j: 5, g: 1, n: 1, p: 3, diff: '-5' },
+                    ].map((row) => (
+                      <tr key={row.club} className="border-b border-white/5 last:border-0">
+                        <td className="py-2">{row.pos}</td>
+                        <td className={`py-2 ${row.club === 'PSG' ? 'text-red-300 font-semibold' : ''}`}>{row.club}</td>
+                        <td className="py-2 text-right text-white font-semibold">{row.pts}</td>
+                        <td className="py-2 text-right">{row.j}</td>
+                        <td className="py-2 text-right">{row.g}</td>
+                        <td className="py-2 text-right">{row.n}</td>
+                        <td className="py-2 text-right">{row.p}</td>
+                        <td className="py-2 text-right">{row.diff}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ScaleIn>
+        </div>
       </div>
     </div>
   );
