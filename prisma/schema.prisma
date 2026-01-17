@@ -93,3 +93,8 @@ model FooterSettings {
   id      Int  @id @default(autoincrement())
   payload Json
 }
+
+model Standings {
+  id      Int  @id @default(autoincrement())
+  payload Json
+}

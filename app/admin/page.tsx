@@ -62,6 +62,22 @@ interface FanWallPost {
   approved: boolean;
 }
 
+interface StandingRow {
+  pos: number;
+  club: string;
+  pts: number;
+  j: number;
+  g: number;
+  n: number;
+  p: number;
+  diff: string;
+}
+
+interface StandingsPayload {
+  ligue1: StandingRow[];
+  championsLeague: StandingRow[];
+}
+
 interface HomeSettings {
   heroLabel: string;
   heroTitle: string;
@@ -190,6 +206,21 @@ const defaultFooterSettings: FooterSettings = {
   bottomText: '© 2026 ULTEAM PSG-X. Tous droits reserves.',
 };
 
+const defaultStandings: StandingsPayload = {
+  ligue1: [
+    { pos: 1, club: 'PSG', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+    { pos: 2, club: 'Monaco', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+    { pos: 3, club: 'Lille', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+    { pos: 4, club: 'Marseille', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+  ],
+  championsLeague: [
+    { pos: 1, club: 'PSG', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+    { pos: 2, club: 'Dortmund', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+    { pos: 3, club: 'Milan', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+    { pos: 4, club: 'Newcastle', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+  ],
+};
+
 export default function AdminPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -235,6 +266,10 @@ export default function AdminPage() {
   const [footerLoading, setFooterLoading] = useState(true);
   const [footerSaving, setFooterSaving] = useState(false);
   const [footerError, setFooterError] = useState<string | null>(null);
+  const [standings, setStandings] = useState<StandingsPayload>(defaultStandings);
+  const [standingsLoading, setStandingsLoading] = useState(true);
+  const [standingsSaving, setStandingsSaving] = useState(false);
+  const [standingsError, setStandingsError] = useState<string | null>(null);
 
   const sortedArticles = useMemo(
     () => [...articles].sort((a, b) => b.date.localeCompare(a.date)),
@@ -372,6 +407,24 @@ export default function AdminPage() {
     }
   };
 
+  const loadStandings = async () => {
+    try {
+      setStandingsLoading(true);
+      const response = await fetch('/api/standings');
+      const data = await response.json();
+      if (data?.ligue1 && data?.championsLeague) {
+        setStandings(data);
+      } else {
+        setStandings(defaultStandings);
+      }
+    } catch (loadError) {
+      console.error('Failed to load standings:', loadError);
+      setStandingsError('Impossible de charger les classements.');
+    } finally {
+      setStandingsLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadArticles();
     loadMatches();
@@ -380,6 +433,7 @@ export default function AdminPage() {
     loadFanWall();
     loadHomeSettings();
     loadFooterSettings();
+    loadStandings();
   }, []);
 
   const handleChange = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -444,6 +498,42 @@ export default function AdminPage() {
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFooterSettings((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const updateStandingsRow = (
+    table: keyof StandingsPayload,
+    index: number,
+    field: keyof StandingRow,
+    value: string
+  ) => {
+    setStandings((current) => {
+      const nextTable = [...current[table]];
+      const row = { ...nextTable[index] };
+      if (field === 'club' || field === 'diff') {
+        row[field] = value;
+      } else {
+        row[field] = Number(value);
+      }
+      nextTable[index] = row;
+      return { ...current, [table]: nextTable };
+    });
+  };
+
+  const addStandingsRow = (table: keyof StandingsPayload) => {
+    setStandings((current) => ({
+      ...current,
+      [table]: [
+        ...current[table],
+        { pos: current[table].length + 1, club: 'Club', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
+      ],
+    }));
+  };
+
+  const removeStandingsRow = (table: keyof StandingsPayload, index: number) => {
+    setStandings((current) => ({
+      ...current,
+      [table]: current[table].filter((_, rowIndex) => rowIndex !== index),
+    }));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -687,6 +777,33 @@ export default function AdminPage() {
       setFooterError('Impossible de sauvegarder le footer.');
     } finally {
       setFooterSaving(false);
+    }
+  };
+
+  const saveStandings = async () => {
+    setStandingsError(null);
+    setStandingsSaving(true);
+
+    try {
+      const response = await fetch('/api/standings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(standings),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      if (data?.ligue1 && data?.championsLeague) {
+        setStandings(data);
+      }
+    } catch (saveError) {
+      console.error('Failed to save standings:', saveError);
+      setStandingsError('Impossible de sauvegarder les classements.');
+    } finally {
+      setStandingsSaving(false);
     }
   };
 
@@ -1486,6 +1603,249 @@ export default function AdminPage() {
                 </span>
               </div>
               <div className="text-xs text-gray-500">{footerSettings.bottomText}</div>
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold text-white">Classements</div>
+                  <p className="text-sm text-gray-400">Mise a jour manuelle des tableaux Ligue 1 et C1.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={saveStandings}
+                  disabled={standingsSaving}
+                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                >
+                  {standingsSaving ? 'Sauvegarde...' : 'Sauvegarder les classements'}
+                </button>
+              </div>
+
+              {standingsError && <div className="text-sm text-red-300">{standingsError}</div>}
+
+              <div className="grid gap-8 lg:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold">Classement Ligue 1</h3>
+                    <button
+                      type="button"
+                      onClick={() => addStandingsRow('ligue1')}
+                      className="text-xs text-red-200 hover:text-red-100"
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-gray-300">
+                      <thead className="text-[11px] uppercase text-gray-400 border-b border-white/10">
+                        <tr>
+                          <th className="py-2 text-left">#</th>
+                          <th className="py-2 text-left">Club</th>
+                          <th className="py-2 text-right">Pts</th>
+                          <th className="py-2 text-right">J</th>
+                          <th className="py-2 text-right">G</th>
+                          <th className="py-2 text-right">N</th>
+                          <th className="py-2 text-right">P</th>
+                          <th className="py-2 text-right">Diff</th>
+                          <th className="py-2 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {standings.ligue1.map((row, index) => (
+                          <tr key={`l1-${index}`} className="border-b border-white/5 last:border-0">
+                            <td className="py-2 pr-2">
+                              <input
+                                type="number"
+                                value={row.pos}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'pos', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.club}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'club', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.pts}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'pts', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.j}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'j', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.g}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'g', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.n}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'n', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.p}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'p', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="text"
+                                value={row.diff}
+                                onChange={(event) => updateStandingsRow('ligue1', index, 'diff', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 text-right">
+                              <button
+                                type="button"
+                                onClick={() => removeStandingsRow('ligue1', index)}
+                                className="text-xs text-red-200 hover:text-red-100"
+                              >
+                                Supprimer
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold">Classement Ligue des Champions</h3>
+                    <button
+                      type="button"
+                      onClick={() => addStandingsRow('championsLeague')}
+                      className="text-xs text-red-200 hover:text-red-100"
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-gray-300">
+                      <thead className="text-[11px] uppercase text-gray-400 border-b border-white/10">
+                        <tr>
+                          <th className="py-2 text-left">#</th>
+                          <th className="py-2 text-left">Club</th>
+                          <th className="py-2 text-right">Pts</th>
+                          <th className="py-2 text-right">J</th>
+                          <th className="py-2 text-right">G</th>
+                          <th className="py-2 text-right">N</th>
+                          <th className="py-2 text-right">P</th>
+                          <th className="py-2 text-right">Diff</th>
+                          <th className="py-2 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {standings.championsLeague.map((row, index) => (
+                          <tr key={`ucl-${index}`} className="border-b border-white/5 last:border-0">
+                            <td className="py-2 pr-2">
+                              <input
+                                type="number"
+                                value={row.pos}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'pos', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.club}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'club', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.pts}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'pts', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.j}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'j', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.g}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'g', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.n}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'n', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.p}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'p', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="text"
+                                value={row.diff}
+                                onChange={(event) => updateStandingsRow('championsLeague', index, 'diff', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 text-right">
+                              <button
+                                type="button"
+                                onClick={() => removeStandingsRow('championsLeague', index)}
+                                className="text-xs text-red-200 hover:text-red-100"
+                              >
+                                Supprimer
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
           </FadeIn>
         </div>
