@@ -1167,11 +1167,22 @@ export default function AdminPage() {
   const normalizeStandings = (rows: StandingRow[]) =>
     rows.map((row, idx) => ({ ...row, pos: idx + 1 }));
 
-  const reorderStandingsByPos = (rows: StandingRow[]) => {
+  const parseDiff = (value: string) => {
+    const normalized = value.replace('+', '').trim();
+    const parsed = Number.parseInt(normalized, 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const reorderStandingsByPoints = (rows: StandingRow[]) => {
     const withIndex = rows.map((row, index) => ({ row, index }));
     withIndex.sort((a, b) => {
-      if (a.row.pos !== b.row.pos) {
-        return a.row.pos - b.row.pos;
+      if (a.row.pts !== b.row.pts) {
+        return b.row.pts - a.row.pts;
+      }
+      const diffA = parseDiff(a.row.diff);
+      const diffB = parseDiff(b.row.diff);
+      if (diffA !== diffB) {
+        return diffB - diffA;
       }
       return a.index - b.index;
     });
@@ -1193,10 +1204,8 @@ export default function AdminPage() {
         row[field] = Number(value);
       }
       nextTable[index] = row;
-      if (field === 'pos') {
-        const clamped = Number.isFinite(row.pos) ? Math.max(1, Math.floor(row.pos)) : index + 1;
-        nextTable[index] = { ...row, pos: clamped };
-        return { ...current, [table]: reorderStandingsByPos(nextTable) };
+      if (field === 'pts' || field === 'diff') {
+        return { ...current, [table]: reorderStandingsByPoints(nextTable) };
       }
       return { ...current, [table]: nextTable };
     });
