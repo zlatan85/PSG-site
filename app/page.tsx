@@ -109,12 +109,12 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Matchday Spotlight */}
+      {/* Focus Match */}
       <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <FadeIn delay={0.25}>
             <div className="matchday-hero rounded-3xl p-6 sm:p-8 lg:p-10">
-              <div className="matchday-tape">Matchday</div>
+              <div className="matchday-tape">Jour de match</div>
               <div className="matchday-orb left matchday-float" />
               <div className="matchday-orb right matchday-float" />
 
@@ -148,7 +148,7 @@ export default async function Home() {
                       href="/fan-zone"
                       className="rounded-lg bg-white/10 px-5 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors"
                     >
-                      Fan Zone
+                      Zone supporters
                     </Link>
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default async function Home() {
                   </div>
                   <div className="mt-3 text-center">
                     <div className="text-xl font-semibold text-white">
-                      {matchdayHome} vs {matchdayAway}
+                      {matchdayHome} - {matchdayAway}
                     </div>
                     <div className="mt-1 text-xs text-gray-400">
                       {matchdayTime} · {matchdayStadium}
@@ -209,7 +209,7 @@ export default async function Home() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-400">{news.date}</span>
                       <Link href={`/news/${news.id}`} className="text-red-400 hover:text-red-300 transition-colors">
-                        Read More →
+                        Lire la suite →
                       </Link>
                     </div>
                   </div>
@@ -231,7 +231,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Alertes Matchday */}
+      {/* Alertes match */}
       <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <FadeIn delay={0.3}>
@@ -280,7 +280,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Fan Zone Teaser */}
+      {/* Teaser Zone supporters */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <FadeIn delay={0.25}>
@@ -288,7 +288,7 @@ export default async function Home() {
               <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
                 <div className="space-y-4">
                   <p className="inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-1 text-sm font-semibold text-red-200">
-                    Fan Zone
+                    Zone supporters
                   </p>
                   <h2 className="text-3xl font-bold text-white">{homeSettings.fanZoneTitle}</h2>
                   <p className="text-gray-300 max-w-xl">{homeSettings.fanZoneSubtitle}</p>
@@ -297,7 +297,7 @@ export default async function Home() {
                       href="/fan-zone"
                       className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
                     >
-                      Entrer dans la Fan Zone
+                      Entrer dans la zone supporters
                     </Link>
                     <Link
                       href="/live"
@@ -308,10 +308,10 @@ export default async function Home() {
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {['Fan Wall', 'Fan Pulse', 'Highlights', 'Chants'].map((item) => (
+                  {['Mur des fans', 'Sondage supporters', 'Temps forts', 'Chants'].map((item) => (
                     <div key={item} className="rounded-2xl bg-white/5 p-4 text-sm text-gray-200">
                       <p className="font-semibold text-white">{item}</p>
-                      <p className="text-gray-400 mt-1">Experience immersive & exclusive.</p>
+                      <p className="text-gray-400 mt-1">Experience immersive et exclusive.</p>
                     </div>
                   ))}
                 </div>
@@ -323,7 +323,7 @@ export default async function Home() {
             <div className="mt-6 rounded-2xl bg-white/5 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Mini Fan Wall</h3>
+                  <h3 className="text-xl font-semibold text-white">Mini mur des fans</h3>
                   <p className="text-sm text-gray-400">Les messages qui font vibrer le Parc.</p>
                 </div>
                 <Link
@@ -355,7 +355,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Supporter Hub */}
+      {/* Espace supporters */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <FadeIn delay={0.3}>
@@ -367,9 +367,9 @@ export default async function Home() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
               { label: 'Effectif', href: '/squad', desc: 'Joueurs, stats, profils.' },
-              { label: 'Calendrier', href: '/calendar', desc: 'Tous les matches a venir.' },
-              { label: 'Live Center', href: '/live', desc: 'Scores, stats, timeline.' },
-              { label: 'Fan Zone', href: '/fan-zone', desc: 'Mur, sondages, highlights.' },
+              { label: 'Calendrier', href: '/calendar', desc: 'Tous les matchs a venir.' },
+              { label: 'Centre live', href: '/live', desc: 'Scores, stats, fil du match.' },
+              { label: 'Zone supporters', href: '/fan-zone', desc: 'Mur, sondages, temps forts.' },
               { label: 'Transferts', href: '/transfers', desc: 'Rumeurs et officialisations.' },
               { label: 'Histoire', href: '/history', desc: 'Legendes, trophées, ADN.' },
             ].map((item) => (
@@ -387,7 +387,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Player Spotlight */}
+      {/* Joueur a la une */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <FadeIn delay={0.3}>

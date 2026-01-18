@@ -16,8 +16,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "ULTEAM PSG-X - Paris Saint-Germain Official News Site",
-  description: "Stay updated with the latest Paris Saint-Germain news, match results, player updates, and more.",
+  title: "ULTEAM PSG-X - Le site d'actus du Paris Saint-Germain",
+  description: "Suis les dernieres actus du PSG, les scores, les infos joueurs et l'ambiance du Parc.",
 };
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className={`${manrope.className} ${bebasNeue.variable} ${manrope.variable} min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-red-900`}>
         <Header />
         <main className="pt-16">

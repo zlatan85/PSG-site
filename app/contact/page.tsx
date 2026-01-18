@@ -71,7 +71,7 @@ export default function ContactPage() {
                 Billetterie, partenariats, presse ou support: notre equipe est la pour vous.
               </p>
               <div className="flex flex-wrap gap-3">
-                {['Billets', 'Partenariats', 'Media', 'Support'].map((item) => (
+                {['Billets', 'Partenariats', 'Presse', 'Support'].map((item) => (
                   <span key={item} className="rounded-full bg-white/10 px-4 py-1 text-xs text-gray-200">
                     {item}
                   </span>

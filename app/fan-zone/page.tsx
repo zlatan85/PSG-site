@@ -28,7 +28,7 @@ const highlights = [
 
 const chants = [
   { id: 1, title: 'Allez Paris', tempo: 'Rapide' },
-  { id: 2, title: 'Ici c\'est Paris', tempo: 'Medium' },
+  { id: 2, title: 'Ici c\'est Paris', tempo: 'Moyen' },
   { id: 3, title: 'Tous ensemble', tempo: 'Lent' },
 ];
 
@@ -41,7 +41,7 @@ export default async function FanZonePage() {
       <div className="mx-auto max-w-6xl space-y-12">
         <FadeIn delay={0.2}>
           <div className="matchday-hero rounded-3xl p-10">
-            <div className="matchday-tape">Fan Zone</div>
+            <div className="matchday-tape">Zone supporters</div>
             <div className="matchday-orb left matchday-float" />
             <div className="matchday-orb right matchday-float" />
             <div className="space-y-4">
@@ -50,10 +50,10 @@ export default async function FanZonePage() {
                 En direct des supporters
               </p>
               <h1 className="font-display text-5xl uppercase text-white sm:text-6xl">
-                Fan Zone
+                Zone supporters
               </h1>
               <p className="max-w-2xl text-lg text-gray-300">
-                Le mur des supporters, les sondages matchday et les moments forts pour vivre le match ensemble.
+                Le mur des supporters, les sondages jour de match et les moments forts pour vivre le match ensemble.
               </p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default async function FanZonePage() {
             <div className="glass rounded-2xl p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-semibold text-white">Fan Wall</h2>
+                  <h2 className="text-2xl font-semibold text-white">Mur des fans</h2>
                   <p className="text-gray-400">Les reactions les plus chaudes du moment.</p>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default async function FanZonePage() {
         <div className="grid gap-8 lg:grid-cols-3">
           <ScaleIn delay={0.35} className="lg:col-span-2">
             <div className="glass rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold text-white mb-6">Highlights</h2>
+              <h2 className="text-2xl font-semibold text-white mb-6">Temps forts</h2>
               <div className="grid gap-4 sm:grid-cols-3">
                 {highlights.map((highlight, index) => (
                   <ScaleIn key={highlight.id} delay={0.4 + index * 0.05}>

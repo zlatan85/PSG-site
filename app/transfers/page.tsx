@@ -6,6 +6,12 @@ import { FadeIn, ScaleIn } from '../../components/MotionWrapper';
 type TransferType = 'incoming' | 'outgoing';
 type TransferInterest = 'High' | 'Medium' | 'Low';
 
+const interestLabel = (interest: TransferInterest) => {
+  if (interest === 'High') return 'Fort';
+  if (interest === 'Medium') return 'Moyen';
+  return 'Faible';
+};
+
 interface TransferEntry {
   id: number;
   type: TransferType;
@@ -44,7 +50,7 @@ interface TransfersSettings {
 const defaultTransfersSettings: TransfersSettings = {
   heroTitle: 'Mercato PSG',
   heroSubtitle: 'Arrivees, departs, rumeurs et negocations: suivez le mercato en temps reel.',
-  badges: ['Live updates', 'Rumeurs fiables', 'Deals officiels'],
+  badges: ['Mises a jour live', 'Rumeurs fiables', 'Deals officiels'],
   marketIndexTitle: 'Indice mercato',
   marketIndexText: 'Fenetre active: concentration sur les postes offensifs et la profondeur de banc.',
   summary: {
@@ -61,7 +67,7 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '41.5M €',
       date: '2025-01-15',
-      position: 'Midfielder',
+      position: 'Milieu',
       nationality: 'Portugal',
     },
     {
@@ -72,8 +78,8 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '18M €',
       date: '2024-12-20',
-      position: 'Midfielder',
-      nationality: 'Spain',
+      position: 'Milieu',
+      nationality: 'Espagne',
     },
     {
       id: 3,
@@ -83,7 +89,7 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'Eintracht Frankfurt',
       fee: '15M €',
       date: '2024-12-10',
-      position: 'Forward',
+      position: 'Attaquant',
       nationality: 'France',
     },
     {
@@ -94,7 +100,7 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'Roma',
       fee: 'Free',
       date: '2024-11-25',
-      position: 'Midfielder',
+      position: 'Milieu',
       nationality: 'Portugal',
     },
     {
@@ -105,31 +111,31 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '45M €',
       date: '2024-07-15',
-      position: 'Defender',
+      position: 'Defenseur',
       nationality: 'France',
     },
   ],
   upcomingTransfers: [
     {
       player: 'Joao Cancelo',
-      position: 'Defender',
+      position: 'Defenseur',
       currentClub: 'Barcelona',
       interest: 'High',
-      status: 'Negotiations',
+      status: 'Negociations',
     },
     {
       player: 'Enzo Fernandez',
-      position: 'Midfielder',
+      position: 'Milieu',
       currentClub: 'Chelsea',
       interest: 'Medium',
-      status: 'Monitoring',
+      status: 'Surveillance',
     },
     {
       player: 'Raphinha',
-      position: 'Forward',
+      position: 'Attaquant',
       currentClub: 'Barcelona',
       interest: 'High',
-      status: 'Advanced Talks',
+      status: 'Discussions avancees',
     },
   ],
 };
@@ -296,7 +302,7 @@ export default function TransfersPage() {
                         transfer.interest === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-gray-500/20 text-gray-400'
                       }`}>
-                        {transfer.interest}
+                        {interestLabel(transfer.interest)}
                       </span>
                       <span className="text-xs text-gray-400">{transfer.status}</span>
                     </div>

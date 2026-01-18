@@ -29,8 +29,8 @@ export default async function Footer() {
             <h4 className="text-sm font-semibold mb-4 text-gray-200 uppercase tracking-widest">Explorer</h4>
             <ul className="space-y-2 text-gray-300">
               <li><Link href="/news" className="hover:text-white transition-colors">Actualites</Link></li>
-              <li><Link href="/live" className="hover:text-white transition-colors">Live Center</Link></li>
-              <li><Link href="/fan-zone" className="hover:text-white transition-colors">Fan Zone</Link></li>
+              <li><Link href="/live" className="hover:text-white transition-colors">Centre live</Link></li>
+              <li><Link href="/fan-zone" className="hover:text-white transition-colors">Zone supporters</Link></li>
               <li><Link href="/calendar" className="hover:text-white transition-colors">Calendrier</Link></li>
               <li><Link href="/squad" className="hover:text-white transition-colors">Effectif</Link></li>
             </ul>

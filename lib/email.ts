@@ -104,7 +104,7 @@ export async function sendVerificationEmail(email: string, code: string): Promis
 }
 
 export async function sendSubscriptionEmail(email: string): Promise<void> {
-  const subject = 'Inscription Matchday Alerts';
+  const subject = 'Inscription alertes match';
   const text = 'Merci pour ton inscription. Tu recevras nos alertes matchday.';
   const html = `
     <div style="font-family: Arial, sans-serif; color: #111;">

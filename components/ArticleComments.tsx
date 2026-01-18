@@ -181,7 +181,7 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-semibold text-white">Commentaires</h3>
         <Link href="/fan-zone" className="text-sm text-red-200 hover:text-red-100">
-          Fan Zone
+          Zone supporters
         </Link>
       </div>
 

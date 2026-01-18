@@ -317,8 +317,8 @@ const defaultHomeSettings: HomeSettings = {
   heroPrimaryHref: '/news',
   heroSecondaryLabel: 'Toutes les actus',
   heroSecondaryHref: '/news',
-  matchdayTitle: 'Matchday Spotlight',
-  matchdaySubtitle: 'Suis le live, la fan zone et les moments forts du match.',
+  matchdayTitle: 'Focus match',
+  matchdaySubtitle: 'Suis le direct, la zone supporters et les moments forts du match.',
   matchdayStatusLabel: '',
   matchdayCompetition: '',
   matchdayHomeTeam: '',
@@ -327,19 +327,19 @@ const defaultHomeSettings: HomeSettings = {
   matchdayDate: '',
   matchdayTime: '',
   matchdayStadium: '',
-  fanZoneTitle: 'Le coeur du supporter',
-  fanZoneSubtitle: 'Mur des supporters, pronostics, highlights et challenges.',
-  alertsTitle: 'Alertes Matchday',
+  fanZoneTitle: 'Le coeur des supporters',
+  fanZoneSubtitle: 'Mur des supporters, pronostics, temps forts et defis.',
+  alertsTitle: 'Alertes match',
   alertsSubtitle: 'Recois les moments forts, la compo officielle et les buts en temps reel.',
-  supporterHubTitle: 'Supporter Hub',
+  supporterHubTitle: 'Espace supporters',
   supporterHubSubtitle: "Tout ce qu'il faut pour vivre PSG a fond.",
-  spotlightLabel: 'Player Spotlight',
+  spotlightLabel: 'Joueur a la une',
 };
 
 const defaultFooterSettings: FooterSettings = {
   brandTitle: 'ULTEAM PSG-X',
-  brandText: 'Le hub des supporters: actus, live, fan zone et moments forts du PSG.',
-  alertsTitle: 'Matchday Alertes',
+  brandText: 'Le hub des supporters: actus, live, zone supporters et moments forts du PSG.',
+  alertsTitle: 'Alertes match',
   alertsText: 'Recois les moments chauds du match et les annonces officielles.',
   alertsCtaLabel: "M'alerter",
   bottomText: '© 2026 ULTEAM PSG-X. Tous droits reserves.',
@@ -402,7 +402,7 @@ const defaultFanZonePoll: FanZonePoll = {
 const defaultTransfersSettings: TransfersSettings = {
   heroTitle: 'Mercato PSG',
   heroSubtitle: 'Arrivees, departs, rumeurs et negocations: suivez le mercato en temps reel.',
-  badges: ['Live updates', 'Rumeurs fiables', 'Deals officiels'],
+  badges: ['Mises a jour live', 'Rumeurs fiables', 'Deals officiels'],
   marketIndexTitle: 'Indice mercato',
   marketIndexText: 'Fenetre active: concentration sur les postes offensifs et la profondeur de banc.',
   summary: {
@@ -419,7 +419,7 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '41.5M €',
       date: '2025-01-15',
-      position: 'Midfielder',
+      position: 'Milieu',
       nationality: 'Portugal',
     },
     {
@@ -430,8 +430,8 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '18M €',
       date: '2024-12-20',
-      position: 'Midfielder',
-      nationality: 'Spain',
+      position: 'Milieu',
+      nationality: 'Espagne',
     },
     {
       id: 3,
@@ -441,7 +441,7 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'Eintracht Frankfurt',
       fee: '15M €',
       date: '2024-12-10',
-      position: 'Forward',
+      position: 'Attaquant',
       nationality: 'France',
     },
     {
@@ -452,7 +452,7 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'Roma',
       fee: 'Free',
       date: '2024-11-25',
-      position: 'Midfielder',
+      position: 'Milieu',
       nationality: 'Portugal',
     },
     {
@@ -463,31 +463,31 @@ const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '45M €',
       date: '2024-07-15',
-      position: 'Defender',
+      position: 'Defenseur',
       nationality: 'France',
     },
   ],
   upcomingTransfers: [
     {
       player: 'Joao Cancelo',
-      position: 'Defender',
+      position: 'Defenseur',
       currentClub: 'Barcelona',
       interest: 'High',
-      status: 'Negotiations',
+      status: 'Negociations',
     },
     {
       player: 'Enzo Fernandez',
-      position: 'Midfielder',
+      position: 'Milieu',
       currentClub: 'Chelsea',
       interest: 'Medium',
-      status: 'Monitoring',
+      status: 'Surveillance',
     },
     {
       player: 'Raphinha',
-      position: 'Forward',
+      position: 'Attaquant',
       currentClub: 'Barcelona',
       interest: 'High',
-      status: 'Advanced Talks',
+      status: 'Discussions avancees',
     },
   ],
 };
@@ -507,81 +507,81 @@ const defaultHistorySettings: HistorySettings = {
   timeline: [
     {
       year: '1970',
-      title: 'Foundation',
-      text: 'Paris Saint-Germain Football Club is founded by merger of Stade Saint-Germain and Paris FC.',
+      title: 'Fondation',
+      text: 'Le Paris Saint-Germain est fonde par la fusion du Stade Saint-Germain et du Paris FC.',
     },
-    { year: '1972', title: 'First Trophy', text: 'PSG wins its first major trophy, the Coupe de France.' },
+    { year: '1972', title: 'Premier trophee', text: 'Le PSG remporte son premier grand trophee: la Coupe de France.' },
     {
       year: '1974',
-      title: 'European Debut',
-      text: "First appearance in European competition with UEFA Cup Winners' Cup.",
+      title: 'Debut europeen',
+      text: 'Premiere participation europeenne en Coupe des vainqueurs de coupe.',
     },
     {
       year: '1982',
       title: 'Stade Parc des Princes',
-      text: 'PSG moves to the iconic Parc des Princes stadium.',
+      text: 'Le PSG s installe au Parc des Princes.',
     },
     {
       year: '1986',
-      title: 'First League Title',
-      text: 'PSG wins its first Ligue 1 championship under manager Gerard Houllier.',
+      title: 'Premier titre de Ligue 1',
+      text: 'Le PSG remporte son premier championnat sous Gerard Houllier.',
     },
     {
       year: '1994-1996',
-      title: 'European Breakthrough',
-      text: 'PSG wins Coupe des Coupes (1996) and reaches UEFA Cup final (1997).',
+      title: 'Eclosion europeenne',
+      text: 'Le PSG remporte la Coupe des coupes (1996) et atteint la finale de la Coupe UEFA (1997).',
     },
-    { year: '1998', title: 'World Cup Glory', text: 'France wins World Cup with several PSG players in the squad.' },
+    { year: '1998', title: 'Sacre mondial', text: 'La France gagne la Coupe du monde avec plusieurs joueurs du PSG.' },
     {
       year: '2000',
-      title: 'Century Trophy',
-      text: 'PSG wins Coupe de la Ligue, completing a domestic cup double.',
+      title: 'Trophees nationaux',
+      text: 'Le PSG gagne la Coupe de la Ligue et realise un double en coupes nationales.',
     },
     {
       year: '2011',
-      title: 'Qatari Investment',
-      text: 'Qatar Sports Investments acquires majority stake, beginning new era.',
+      title: 'Arrivee du QSI',
+      text: 'Qatar Sports Investments rachete le club et lance une nouvelle ere.',
     },
     {
       year: '2013',
-      title: 'First Champions League Semi-Final',
-      text: 'PSG reaches Champions League semi-finals for the first time.',
+      title: 'Demi-finale de C1',
+      text: 'Le PSG atteint les demi-finales de Ligue des champions pour la premiere fois.',
     },
     {
       year: '2015',
-      title: 'Domestic Dominance',
-      text: 'PSG wins Ligue 1, Coupe de France, and Coupe de la Ligue treble.',
+      title: 'Domination nationale',
+      text: 'Le PSG remporte le trio Ligue 1, Coupe de France et Coupe de la Ligue.',
     },
     {
       year: '2017',
-      title: 'Galacticos Era Begins',
-      text: 'Signing of Neymar Jr. marks beginning of superstar acquisitions.',
+      title: 'Ere des stars',
+      text: "L'arrivee de Neymar marque un tournant dans les recrutements.",
     },
     {
       year: '2018',
-      title: 'Mbappe Joins',
-      text: "Kylian Mbappe signs from Monaco, becoming one of world's most expensive transfers.",
+      title: 'Arrivee de Mbappe',
+      text: 'Kylian Mbappe arrive de Monaco et devient l un des transferts les plus chers.',
     },
-    { year: '2020', title: 'UCL Final', text: 'PSG reaches its first Champions League final.' },
+    { year: '2020', title: 'Finale de C1', text: 'Le PSG dispute sa premiere finale de Ligue des champions.' },
     {
       year: '2021',
-      title: 'Messi Arrives',
-      text: 'Lionel Messi joins PSG after leaving Barcelona, completing holy trinity with Neymar and Mbappe.',
+      title: 'Messi a Paris',
+      text: 'Lionel Messi rejoint le PSG et complete le trio avec Neymar et Mbappe.',
     },
     {
       year: '2022',
-      title: 'Domestic Success',
-      text: 'PSG wins Ligue 1 title and reaches Champions League final again.',
+      title: 'Succes national',
+      text: 'Le PSG gagne la Ligue 1 et reste ambitieux en Ligue des champions.',
     },
     {
       year: '2023',
-      title: 'Continued Excellence',
-      text: "PSG maintains position as France's top club with continued European ambitions.",
+      title: 'Ambition continue',
+      text: 'Le PSG reste le leader en France avec des ambitions europeennes.',
     },
     {
       year: '2024',
-      title: 'Future Champions',
-      text: 'PSG continues to build towards Champions League glory with world-class squad.',
+      title: 'Objectif Europe',
+      text: 'Le PSG construit un effectif de haut niveau pour viser l Europe.',
     },
   ],
 };
@@ -877,7 +877,7 @@ export default function AdminPage() {
       setFanWallPosts(Array.isArray(data) ? data : []);
     } catch (loadError) {
       console.error('Failed to load fan wall:', loadError);
-      setFanWallError('Impossible de charger la fan zone.');
+      setFanWallError('Impossible de charger le mur des fans.');
     } finally {
       setFanWallLoading(false);
     }
@@ -1068,7 +1068,7 @@ export default function AdminPage() {
       setChallenges(Array.isArray(data) ? data : []);
     } catch (loadError) {
       console.error('Failed to load challenges:', loadError);
-      setChallengesError('Impossible de charger les challenges.');
+      setChallengesError('Impossible de charger les defis.');
     } finally {
       setChallengesLoading(false);
     }
@@ -1856,7 +1856,7 @@ export default function AdminPage() {
       setChallenges(Array.isArray(data) ? data : []);
     } catch (saveError) {
       console.error('Failed to save challenges:', saveError);
-      setChallengesError('Impossible de sauvegarder les challenges.');
+      setChallengesError('Impossible de sauvegarder les defis.');
     }
   };
 
@@ -1869,7 +1869,7 @@ export default function AdminPage() {
   };
 
   const deleteChallenge = async (id: number) => {
-    const confirmed = window.confirm('Supprimer ce challenge ?');
+    const confirmed = window.confirm('Supprimer ce defi ?');
     if (!confirmed) return;
     const nextItems = challenges.filter((item) => item.id !== id);
     setChallenges(nextItems);
@@ -2194,7 +2194,7 @@ export default function AdminPage() {
       setEditingFanWallId(null);
     } catch (saveError) {
       console.error('Failed to save fan wall:', saveError);
-      setFanWallError('Impossible de sauvegarder la fan zone.');
+      setFanWallError('Impossible de sauvegarder le mur des fans.');
     } finally {
       setFanWallSaving(false);
     }
@@ -2205,7 +2205,7 @@ export default function AdminPage() {
   };
 
   const deleteFanWallPost = async (id: number) => {
-    const confirmed = window.confirm('Supprimer ce message fan wall ?');
+    const confirmed = window.confirm('Supprimer ce message du mur des fans ?');
     if (!confirmed) return;
     const nextPosts = fanWallPosts.filter((item) => item.id !== id);
     setFanWallPosts(nextPosts);
@@ -2563,7 +2563,7 @@ export default function AdminPage() {
             <div className="glass rounded-lg p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-lg font-semibold text-white">Live Center - Compo manuelle</div>
+                  <div className="text-lg font-semibold text-white">Centre live - Compo manuelle</div>
                   <p className="text-sm text-gray-400">Score, statut et onze de depart pour le live.</p>
                 </div>
                 <button
@@ -2765,20 +2765,20 @@ export default function AdminPage() {
                   <div className="grid gap-3">
                     <input
                       type="text"
-                      placeholder="Titre Matchday"
+                      placeholder="Titre jour de match"
                       value={homeSettings.matchdayTitle}
                       onChange={handleHomeSettingsChange('matchdayTitle')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                     <textarea
-                      placeholder="Sous-titre Matchday"
+                      placeholder="Sous-titre jour de match"
                       value={homeSettings.matchdaySubtitle}
                       onChange={handleHomeSettingsChange('matchdaySubtitle')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[80px]"
                     />
                     <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
                       <div className="text-xs uppercase tracking-widest text-gray-400">
-                        Matchday Spotlight (manuel)
+                        Focus match (manuel)
                       </div>
                       <input
                         type="text"
@@ -2845,13 +2845,13 @@ export default function AdminPage() {
                     </div>
                     <input
                       type="text"
-                      placeholder="Titre Fan Zone"
+                      placeholder="Titre zone supporters"
                       value={homeSettings.fanZoneTitle}
                       onChange={handleHomeSettingsChange('fanZoneTitle')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                     <textarea
-                      placeholder="Sous-titre Fan Zone"
+                      placeholder="Sous-titre zone supporters"
                       value={homeSettings.fanZoneSubtitle}
                       onChange={handleHomeSettingsChange('fanZoneSubtitle')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[80px]"
@@ -2871,21 +2871,21 @@ export default function AdminPage() {
                     />
                     <input
                       type="text"
-                      placeholder="Titre Supporter Hub"
+                      placeholder="Titre espace supporters"
                       value={homeSettings.supporterHubTitle}
                       onChange={handleHomeSettingsChange('supporterHubTitle')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                     <input
                       type="text"
-                      placeholder="Sous-titre Supporter Hub"
+                      placeholder="Sous-titre espace supporters"
                       value={homeSettings.supporterHubSubtitle}
                       onChange={handleHomeSettingsChange('supporterHubSubtitle')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                     <input
                       type="text"
-                      placeholder="Label Player Spotlight"
+                      placeholder="Label joueur a la une"
                       value={homeSettings.spotlightLabel}
                       onChange={handleHomeSettingsChange('spotlightLabel')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -3240,9 +3240,9 @@ export default function AdminPage() {
                             onChange={(event) => updateUpcomingTransfer(index, 'interest', event.target.value)}
                             className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-400"
                           >
-                            <option value="High" className="bg-blue-900">High</option>
-                            <option value="Medium" className="bg-blue-900">Medium</option>
-                            <option value="Low" className="bg-blue-900">Low</option>
+                            <option value="High" className="bg-blue-900">Fort</option>
+                            <option value="Medium" className="bg-blue-900">Moyen</option>
+                            <option value="Low" className="bg-blue-900">Faible</option>
                           </select>
                           <div className="flex gap-2">
                             <input
@@ -3991,7 +3991,7 @@ export default function AdminPage() {
           <FadeIn delay={0.3}>
             <form onSubmit={handleFanWallSubmit} className="glass rounded-lg p-6 space-y-4">
               <div className="text-lg font-semibold text-white">
-                {editingFanWallId !== null ? 'Modifier un message fan wall' : 'Nouveau message fan wall'}
+                {editingFanWallId !== null ? 'Modifier un message mur des fans' : 'Nouveau message mur des fans'}
               </div>
               <div className="space-y-3">
                 <input
@@ -4058,7 +4058,7 @@ export default function AdminPage() {
                   disabled={fanWallSaving}
                   className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-60"
                 >
-                  {fanWallSaving ? 'Sauvegarde...' : 'Sauvegarder la fan zone'}
+                  {fanWallSaving ? 'Sauvegarde...' : 'Sauvegarder le mur des fans'}
                 </button>
               </div>
             </form>
@@ -4067,7 +4067,7 @@ export default function AdminPage() {
           <div className="space-y-4">
             <FadeIn delay={0.4}>
               <div className="glass rounded-lg p-6">
-                <div className="text-lg font-semibold text-white mb-4">Fan wall</div>
+                <div className="text-lg font-semibold text-white mb-4">Mur des fans</div>
                 {fanWallLoading && <div className="text-gray-300">Chargement...</div>}
                 {!fanWallLoading && sortedFanWall.length === 0 && (
                   <div className="text-gray-300">Aucun message pour le moment.</div>
@@ -4308,7 +4308,7 @@ export default function AdminPage() {
             <div className="glass rounded-lg p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-lg font-semibold text-white">Sondage Fan Zone</div>
+                  <div className="text-lg font-semibold text-white">Sondage zone supporters</div>
                   <p className="text-sm text-gray-400">Question + 3 choix, votes publics.</p>
                 </div>
                 <div className="flex gap-2">
@@ -4409,7 +4409,7 @@ export default function AdminPage() {
         <div className="mt-12">
           <FadeIn delay={0.45}>
             <div className="glass rounded-lg p-6 space-y-4">
-              <div className="text-lg font-semibold text-white">Matchday Challenge (modération)</div>
+              <div className="text-lg font-semibold text-white">Defi jour de match (moderation)</div>
               {challengesError && <div className="text-sm text-red-300">{challengesError}</div>}
               {challengesLoading && <div className="text-gray-300">Chargement...</div>}
               {!challengesLoading && challenges.length === 0 && (

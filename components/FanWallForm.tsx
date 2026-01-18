@@ -47,7 +47,7 @@ export default function FanWallForm() {
       </div>
       <textarea
         name="message"
-        placeholder="Ton message pour la fan zone..."
+        placeholder="Ton message pour la zone supporters..."
         value={message}
         onChange={(event) => setMessage(event.target.value)}
         className="mt-3 w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[90px]"

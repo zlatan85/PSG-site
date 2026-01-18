@@ -39,7 +39,7 @@ export interface TransfersSettings {
 export const defaultTransfersSettings: TransfersSettings = {
   heroTitle: 'Mercato PSG',
   heroSubtitle: 'Arrivees, departs, rumeurs et negocations: suivez le mercato en temps reel.',
-  badges: ['Live updates', 'Rumeurs fiables', 'Deals officiels'],
+  badges: ['Mises a jour live', 'Rumeurs fiables', 'Deals officiels'],
   marketIndexTitle: 'Indice mercato',
   marketIndexText: 'Fenetre active: concentration sur les postes offensifs et la profondeur de banc.',
   summary: {
@@ -56,7 +56,7 @@ export const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '41.5M €',
       date: '2025-01-15',
-      position: 'Midfielder',
+      position: 'Milieu',
       nationality: 'Portugal',
     },
     {
@@ -67,8 +67,8 @@ export const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '18M €',
       date: '2024-12-20',
-      position: 'Midfielder',
-      nationality: 'Spain',
+      position: 'Milieu',
+      nationality: 'Espagne',
     },
     {
       id: 3,
@@ -78,7 +78,7 @@ export const defaultTransfersSettings: TransfersSettings = {
       to: 'Eintracht Frankfurt',
       fee: '15M €',
       date: '2024-12-10',
-      position: 'Forward',
+      position: 'Attaquant',
       nationality: 'France',
     },
     {
@@ -89,7 +89,7 @@ export const defaultTransfersSettings: TransfersSettings = {
       to: 'Roma',
       fee: 'Free',
       date: '2024-11-25',
-      position: 'Midfielder',
+      position: 'Milieu',
       nationality: 'Portugal',
     },
     {
@@ -100,31 +100,31 @@ export const defaultTransfersSettings: TransfersSettings = {
       to: 'PSG',
       fee: '45M €',
       date: '2024-07-15',
-      position: 'Defender',
+      position: 'Defenseur',
       nationality: 'France',
     },
   ],
   upcomingTransfers: [
     {
       player: 'Joao Cancelo',
-      position: 'Defender',
+      position: 'Defenseur',
       currentClub: 'Barcelona',
       interest: 'High',
-      status: 'Negotiations',
+      status: 'Negociations',
     },
     {
       player: 'Enzo Fernandez',
-      position: 'Midfielder',
+      position: 'Milieu',
       currentClub: 'Chelsea',
       interest: 'Medium',
-      status: 'Monitoring',
+      status: 'Surveillance',
     },
     {
       player: 'Raphinha',
-      position: 'Forward',
+      position: 'Attaquant',
       currentClub: 'Barcelona',
       interest: 'High',
-      status: 'Advanced Talks',
+      status: 'Discussions avancees',
     },
   ],
 };

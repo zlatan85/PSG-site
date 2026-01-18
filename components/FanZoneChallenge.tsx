@@ -72,7 +72,7 @@ export default function FanZoneChallenge() {
   return (
     <div className="glass rounded-2xl p-6 space-y-4">
       <div>
-        <h3 className="text-xl font-semibold text-white">Matchday Challenge</h3>
+        <h3 className="text-xl font-semibold text-white">Defi jour de match</h3>
         <p className="text-sm text-gray-400">Partage ta photo ou video en rouge et bleu.</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -118,7 +118,7 @@ export default function FanZoneChallenge() {
         disabled={status === 'sending' || !name || !mediaUrl}
         className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors disabled:opacity-60"
       >
-        {status === 'sending' ? 'Envoi...' : 'Envoyer au challenge'}
+        {status === 'sending' ? 'Envoi...' : 'Envoyer au defi'}
       </button>
       {status === 'sent' && (
         <p className="text-xs text-green-200">Merci ! Ton contenu est en attente de moderation.</p>

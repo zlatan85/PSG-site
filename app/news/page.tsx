@@ -37,7 +37,7 @@ export default function NewsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Loading news...</div>
+        <div className="text-white">Chargement des actus...</div>
       </div>
     );
   }
@@ -62,7 +62,7 @@ export default function NewsPage() {
             <div className="matchday-orb right matchday-float" />
             <div className="space-y-4">
               <h1 className="font-display text-5xl uppercase text-white sm:text-6xl">
-                ULTEAM PSG-X Newsroom
+                Redaction ULTEAM PSG-X
               </h1>
               <p className="text-gray-300 max-w-2xl">
                 Actus, analyses, interviews et coulisses du club.
@@ -78,7 +78,7 @@ export default function NewsPage() {
               <div className="flex-1">
                 <input
                   type="text"
-                  placeholder="Search news..."
+                  placeholder="Rechercher une actu..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -101,7 +101,7 @@ export default function NewsPage() {
           </div>
         </FadeIn>
 
-        {/* News Articles */}
+        {/* Articles */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {sortedArticles.map((article, index) => (
             <ScaleIn key={article.id} delay={0.6 + index * 0.1}>
@@ -124,7 +124,7 @@ export default function NewsPage() {
                       href={`/news/${article.id}`}
                       className="text-red-400 hover:text-red-300 transition-colors font-medium"
                     >
-                      Read More →
+                      Lire la suite →
                     </Link>
                   </div>
                 </div>
@@ -136,7 +136,7 @@ export default function NewsPage() {
         {filteredArticles.length === 0 && (
           <FadeIn delay={0.8}>
             <div className="text-center py-12">
-              <p className="text-gray-300 text-lg">No articles found matching your criteria.</p>
+              <p className="text-gray-300 text-lg">Aucun article ne correspond a vos criteres.</p>
             </div>
           </FadeIn>
         )}

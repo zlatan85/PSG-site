@@ -5,14 +5,14 @@ import { useState } from 'react';
 import { FadeIn } from './MotionWrapper';
 
 const navigation = [
-  { name: 'Home', href: '/' },
-  { name: 'News', href: '/news' },
-  { name: 'Squad', href: '/squad' },
-  { name: 'Calendar', href: '/calendar' },
-  { name: 'Live', href: '/live' },
-  { name: 'Fan Zone', href: '/fan-zone' },
-  { name: 'Transfers', href: '/transfers' },
-  { name: 'History', href: '/history' },
+  { name: 'Accueil', href: '/' },
+  { name: 'Actus', href: '/news' },
+  { name: 'Effectif', href: '/squad' },
+  { name: 'Calendrier', href: '/calendar' },
+  { name: 'Direct', href: '/live' },
+  { name: 'Zone supporters', href: '/fan-zone' },
+  { name: 'Transferts', href: '/transfers' },
+  { name: 'Histoire', href: '/history' },
   { name: 'Contact', href: '/contact' },
 ];
 
@@ -46,7 +46,7 @@ export default function Header() {
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-white/10 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">Ouvrir le menu principal</span>
               {isOpen ? (
                 <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

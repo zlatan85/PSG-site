@@ -71,7 +71,7 @@ export default function FanZonePoll() {
 
   return (
     <div className="glass matchday-glow matchday-sweep rounded-2xl p-6">
-      <h3 className="text-xl font-semibold text-white mb-2">Fan Pulse</h3>
+      <h3 className="text-xl font-semibold text-white mb-2">Sondage supporters</h3>
       <p className="text-gray-300 mb-6">{poll.question}</p>
       <div className="space-y-4">
         {poll.options.map((option, index) => {

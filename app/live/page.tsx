@@ -10,7 +10,7 @@ const statRows = [
   { key: 'shotsOnTarget', label: 'Tirs cadres' },
   { key: 'xg', label: 'xG' },
   { key: 'passes', label: 'Passes' },
-  { key: 'passAccuracy', label: 'Precision passes', suffix: '%' },
+  { key: 'passAccuracy', label: 'Precision des passes', suffix: '%' },
   { key: 'corners', label: 'Corners' },
   { key: 'offsides', label: 'Hors-jeu' },
   { key: 'fouls', label: 'Fautes' },
@@ -29,6 +29,21 @@ const eventBadge = (type: string) => {
   }
 };
 
+const eventLabel = (type: string) => {
+  switch (type) {
+    case 'goal':
+      return 'BUT';
+    case 'card':
+      return 'CARTON';
+    case 'substitution':
+      return 'CHANGEMENT';
+    case 'chance':
+      return 'OCCASION';
+    default:
+      return type.toUpperCase();
+  }
+};
+
 export default async function LiveMatchPage() {
   const liveMatch = await readLiveMatch();
   const liveOverrides = await readLiveOverrides();
@@ -37,7 +52,7 @@ export default async function LiveMatchPage() {
     return (
       <div className="min-h-screen px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl text-center text-gray-300">
-          <h1 className="text-3xl font-bold text-white mb-4">Live Match Center</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">Centre du match en direct</h1>
           <p>Aucune donnee live disponible pour le moment.</p>
         </div>
       </div>
@@ -109,9 +124,9 @@ export default async function LiveMatchPage() {
           <div className="text-center space-y-4">
             <p className="inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-1 text-sm font-semibold text-red-200">
               <span className="inline-flex h-2 w-2 rounded-full bg-red-400 matchday-blink" />
-              LIVE {minute}&apos; {period}
+              DIRECT {minute}&apos; {period}
             </p>
-            <h1 className="text-4xl font-bold text-white sm:text-5xl">Live Match Center</h1>
+            <h1 className="text-4xl font-bold text-white sm:text-5xl">Centre du match en direct</h1>
             <p className="text-gray-300">
               {competition} · {stadium} · Arbitre {referee}
             </p>
@@ -184,7 +199,7 @@ export default async function LiveMatchPage() {
                 <h4 className="text-lg font-semibold text-white mb-3">Prochain match</h4>
                 <div className="rounded-xl bg-white/10 p-4">
                   <p className="text-sm text-gray-300">{safeNextMatch.competition}</p>
-                  <p className="text-lg text-white font-semibold">PSG vs {safeNextMatch.opponent}</p>
+                  <p className="text-lg text-white font-semibold">PSG - {safeNextMatch.opponent}</p>
                   <p className="text-sm text-gray-300">
                     {new Date(safeNextMatch.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} · {safeNextMatch.venue}
                   </p>
@@ -197,7 +212,7 @@ export default async function LiveMatchPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           <ScaleIn delay={0.4} className="lg:col-span-2">
             <div className="glass rounded-2xl p-8">
-              <h3 className="text-2xl font-semibold text-white mb-6">Timeline Live</h3>
+              <h3 className="text-2xl font-semibold text-white mb-6">Fil du match</h3>
               <div className="space-y-4">
                 {safeEvents.map((event) => (
                   <div key={`${event.minute}-${event.player}`} className="flex items-start gap-4 rounded-xl bg-white/5 p-4">
@@ -205,7 +220,7 @@ export default async function LiveMatchPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${eventBadge(event.type)}`}>
-                          {event.type.toUpperCase()}
+                          {eventLabel(event.type)}
                         </span>
                         <span className="text-white font-semibold">{event.player}</span>
                         <span className="text-sm text-gray-300">({event.team})</span>
@@ -262,7 +277,7 @@ export default async function LiveMatchPage() {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-white mb-3">Fan Pulse</h3>
+                <h3 className="text-xl font-semibold text-white mb-3">Sondage supporters</h3>
                 <p className="text-gray-300 mb-4">Qui est le joueur du match pour l&apos;instant ?</p>
                 <div className="space-y-2">
                   {['Mbappe', 'Dembele', 'Vitinha'].map((player) => (
