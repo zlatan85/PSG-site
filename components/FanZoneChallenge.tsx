@@ -139,6 +139,8 @@ export default function FanZoneChallenge() {
                 <img
                   src={item.mediaUrl}
                   alt={item.caption || item.name}
+                  loading="lazy"
+                  decoding="async"
                   className="h-40 w-full object-cover"
                 />
               ) : (

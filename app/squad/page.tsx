@@ -88,6 +88,8 @@ export default async function SquadPage() {
                         <img
                           src={normalizeImage(player.image)}
                           alt={player.name}
+                          loading="lazy"
+                          decoding="async"
                           className="h-44 w-full object-contain bg-white/5"
                         />
                         <div className="p-5">
@@ -121,6 +123,8 @@ export default async function SquadPage() {
                     <img
                       src={normalizeImage(member.image)}
                       alt={member.name}
+                      loading="lazy"
+                      decoding="async"
                       className="h-44 w-full object-contain bg-white/5"
                     />
                     <div className="p-5">

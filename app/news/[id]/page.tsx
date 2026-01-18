@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
+import ArticleComments from '../../../components/ArticleComments';
 import { FadeIn } from '../../../components/MotionWrapper';
 
 export const dynamic = 'force-dynamic';
@@ -79,6 +80,8 @@ const renderMarkdownBlocks = (content: string): ReactNode[] => {
           <img
             src={src}
             alt={alt || 'Illustration'}
+            loading="lazy"
+            decoding="async"
             className="w-full max-h-[520px] rounded-2xl object-contain bg-black/40 shadow-lg"
           />
           {caption ? <figcaption className="text-xs text-gray-400">{caption}</figcaption> : null}
@@ -214,6 +217,10 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
     );
   }, [decodedId, news, normalizedId, numericId]);
 
+  const commentArticleId = Number.isFinite(numericId)
+    ? numericId
+    : article?.id ?? null;
+
   if (loading) {
     return (
       <div className="min-h-screen px-4 py-16 sm:px-6 lg:px-8 flex items-center justify-center">
@@ -279,6 +286,8 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
               <img
                 src={article.image || '/api/placeholder/1200/700'}
                 alt={article.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full max-h-[520px] object-contain bg-black/40"
               />
               <div className="p-8 text-gray-200">
@@ -290,6 +299,10 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
               </div>
             </div>
           </FadeIn>
+
+        <FadeIn delay={0.35}>
+          <ArticleComments articleId={commentArticleId} />
+        </FadeIn>
 
         <FadeIn delay={0.4}>
           <div className="text-center">

@@ -69,6 +69,16 @@ interface AdminUser {
   emailVerified: boolean;
 }
 
+interface NewsCommentEntry {
+  id: number;
+  articleId: number;
+  name: string;
+  handle: string;
+  message: string;
+  approved: boolean;
+  createdAt: string;
+}
+
 interface StandingRow {
   pos: number;
   club: string;
@@ -588,6 +598,7 @@ export default function AdminPage() {
   const [adminPassword, setAdminPassword] = useState('');
   const [adminVerifyCode, setAdminVerifyCode] = useState('');
   const [adminVerifyStatus, setAdminVerifyStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
+  const [adminResendStatus, setAdminResendStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
 
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -625,6 +636,9 @@ export default function AdminPage() {
   const [fanWallLoading, setFanWallLoading] = useState(true);
   const [fanWallSaving, setFanWallSaving] = useState(false);
   const [fanWallError, setFanWallError] = useState<string | null>(null);
+  const [newsComments, setNewsComments] = useState<NewsCommentEntry[]>([]);
+  const [newsCommentsLoading, setNewsCommentsLoading] = useState(true);
+  const [newsCommentsError, setNewsCommentsError] = useState<string | null>(null);
   const [homeSettings, setHomeSettings] = useState<HomeSettings>(defaultHomeSettings);
   const [homeLoading, setHomeLoading] = useState(true);
   const [homeSaving, setHomeSaving] = useState(false);
@@ -768,6 +782,26 @@ export default function AdminPage() {
     }
   };
 
+  const handleAdminResend = async () => {
+    if (!adminUser) return;
+    setAdminResendStatus('sending');
+    try {
+      const response = await fetch('/api/auth/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminUser.email }),
+      });
+      if (!response.ok) {
+        setAdminResendStatus('error');
+        return;
+      }
+      setAdminResendStatus('ok');
+    } catch (resendError) {
+      console.error('Admin resend error:', resendError);
+      setAdminResendStatus('error');
+    }
+  };
+
   const handleAdminLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setAdminUser(null);
@@ -846,6 +880,20 @@ export default function AdminPage() {
       setFanWallError('Impossible de charger la fan zone.');
     } finally {
       setFanWallLoading(false);
+    }
+  };
+
+  const loadNewsComments = async () => {
+    try {
+      setNewsCommentsLoading(true);
+      const response = await fetch('/api/news-comments?all=1');
+      const data = await response.json();
+      setNewsComments(Array.isArray(data) ? data : []);
+    } catch (loadError) {
+      console.error('Failed to load comments:', loadError);
+      setNewsCommentsError('Impossible de charger les commentaires.');
+    } finally {
+      setNewsCommentsLoading(false);
     }
   };
 
@@ -1039,6 +1087,7 @@ export default function AdminPage() {
     loadSquad();
     loadLiveMatch();
     loadFanWall();
+    loadNewsComments();
     loadHomeSettings();
     loadFooterSettings();
     loadTransfersSettings();
@@ -2175,6 +2224,41 @@ export default function AdminPage() {
     await persistFanWall(nextPosts);
   };
 
+  const persistNewsComments = async (nextComments: NewsCommentEntry[]) => {
+    setNewsCommentsError(null);
+    try {
+      const response = await fetch('/api/news-comments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comments: nextComments }),
+      });
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+      const data = await response.json();
+      setNewsComments(Array.isArray(data) ? data : []);
+    } catch (saveError) {
+      console.error('Failed to save comments:', saveError);
+      setNewsCommentsError('Impossible de sauvegarder les commentaires.');
+    }
+  };
+
+  const toggleNewsCommentApproval = async (id: number) => {
+    const nextComments = newsComments.map((item) =>
+      item.id === id ? { ...item, approved: !item.approved } : item
+    );
+    setNewsComments(nextComments);
+    await persistNewsComments(nextComments);
+  };
+
+  const deleteNewsComment = async (id: number) => {
+    const confirmed = window.confirm('Supprimer ce commentaire ?');
+    if (!confirmed) return;
+    const nextComments = newsComments.filter((item) => item.id !== id);
+    setNewsComments(nextComments);
+    await persistNewsComments(nextComments);
+  };
+
   const previewImage = form.image.trim() || '/api/placeholder/600/400';
   const previewPlayerImage = playerForm.image.trim() || '/api/placeholder/300/400';
   const previewStaffImage = staffForm.image.trim() || '/api/placeholder/300/400';
@@ -2259,15 +2343,30 @@ export default function AdminPage() {
             onChange={(event) => setAdminVerifyCode(event.target.value)}
             className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
           />
-          <button
-            type="button"
-            onClick={handleAdminVerify}
-            className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
-          >
-            {adminVerifyStatus === 'sending' ? 'Verification...' : 'Verifier'}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleAdminVerify}
+              className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
+            >
+              {adminVerifyStatus === 'sending' ? 'Verification...' : 'Verifier'}
+            </button>
+            <button
+              type="button"
+              onClick={handleAdminResend}
+              className="flex-1 rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors"
+            >
+              Renvoyer le code
+            </button>
+          </div>
           {adminVerifyStatus === 'error' && (
             <p className="text-xs text-red-200">Code invalide ou expire.</p>
+          )}
+          {adminResendStatus === 'ok' && (
+            <p className="text-xs text-green-200">Email renvoye.</p>
+          )}
+          {adminResendStatus === 'error' && (
+            <p className="text-xs text-red-200">Impossible d&apos;envoyer le code.</p>
           )}
         </div>
       </div>
@@ -4023,6 +4122,59 @@ export default function AdminPage() {
               </div>
             </FadeIn>
           </div>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.3}>
+            <div className="glass rounded-lg p-6 space-y-4">
+              <div className="text-lg font-semibold text-white">Commentaires articles</div>
+              {newsCommentsError && <div className="text-sm text-red-300">{newsCommentsError}</div>}
+              {newsCommentsLoading && <div className="text-gray-300">Chargement...</div>}
+              {!newsCommentsLoading && newsComments.length === 0 && (
+                <div className="text-gray-300">Aucun commentaire pour le moment.</div>
+              )}
+              <div className="space-y-4">
+                {newsComments.map((comment) => (
+                  <div key={comment.id} className="rounded-lg border border-white/10 p-4 flex gap-4 items-center">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-semibold truncate">
+                        {comment.name} <span className="text-gray-400">{comment.handle}</span>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Article #{comment.articleId} · {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
+                      </div>
+                      <div className="text-sm text-gray-300 mt-2 line-clamp-2">{comment.message}</div>
+                      <div className="mt-2 text-xs">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-1 ${
+                            comment.approved ? 'bg-green-500/20 text-green-200' : 'bg-yellow-500/20 text-yellow-200'
+                          }`}
+                        >
+                          {comment.approved ? 'Publie' : 'En attente'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleNewsCommentApproval(comment.id)}
+                        className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                      >
+                        {comment.approved ? 'Retirer' : 'Publier'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteNewsComment(comment.id)}
+                        className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">

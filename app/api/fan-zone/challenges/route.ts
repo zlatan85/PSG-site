@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readChallenges, writeChallenges } from '../../../../lib/challenges-store';
+import { getClientFingerprint, isRateLimited } from '../../../../lib/rate-limit';
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
@@ -14,6 +15,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const clientKey = `challenges:${getClientFingerprint(request.headers)}`;
+  if (isRateLimited(clientKey, 90_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const payload = await request.json();
   if (!isNonEmptyString(payload?.name) || !isNonEmptyString(payload?.mediaUrl)) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });

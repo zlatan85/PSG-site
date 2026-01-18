@@ -11,6 +11,7 @@ import {
   writeSessions,
   sessionExpiry,
 } from '../../../../lib/auth-store';
+import { sendVerificationEmail } from '../../../../lib/email';
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
@@ -47,6 +48,13 @@ export async function POST(request: Request) {
 
   await writeUsers([...users, newUser]);
 
+  try {
+    await sendVerificationEmail(newUser.email, verificationCode);
+  } catch (mailError) {
+    console.error('Failed to send verification email:', mailError);
+    return NextResponse.json({ error: 'Email service unavailable' }, { status: 503 });
+  }
+
   const token = createSessionToken();
   const sessions = await readSessions();
   const newSession = {
@@ -62,7 +70,6 @@ export async function POST(request: Request) {
     name: newUser.name,
     email: newUser.email,
     emailVerified: false,
-    verificationCode,
   });
   response.cookies.set('psg_session', token, {
     httpOnly: true,

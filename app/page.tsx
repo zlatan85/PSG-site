@@ -65,6 +65,8 @@ export default async function Home() {
                   <img
                     src={homeSettings.heroImage || latestArticle.image || '/api/placeholder/1600/900'}
                     alt={latestArticle.title}
+                    loading="eager"
+                    decoding="async"
                     className="h-[60vh] w-full object-cover lg:object-contain lg:bg-black/40"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
@@ -197,6 +199,8 @@ export default async function Home() {
                   <img
                     src={news.image || '/api/placeholder/600/400'}
                     alt={news.title}
+                    loading="lazy"
+                    decoding="async"
                     className="h-32 w-full object-contain bg-black/40"
                   />
                   <div className="p-6 flex flex-col flex-1">
@@ -434,6 +438,8 @@ export default async function Home() {
                   <img
                     src={featuredPlayer?.image || '/api/placeholder/800/900'}
                     alt={featuredPlayer?.name || 'Joueur PSG'}
+                    loading="lazy"
+                    decoding="async"
                     className="h-[320px] w-full object-contain bg-black/40 sm:h-[380px]"
                   />
                   </div>

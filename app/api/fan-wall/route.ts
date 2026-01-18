@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFanWall, writeFanWall } from '../../../lib/fan-wall-store';
 import { getUserFromToken } from '../../../lib/auth-store';
+import { getClientFingerprint, isRateLimited } from '../../../lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,6 +40,11 @@ export async function PUT(request: Request) {
 }
 
 export async function POST(request: NextRequest) {
+  const clientKey = `fan-wall:${getClientFingerprint(request.headers)}`;
+  if (isRateLimited(clientKey, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const payload = await request.json();
   if (!isNonEmptyString(payload?.message)) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });

@@ -47,6 +47,16 @@ model NewsArticle {
   date    String
 }
 
+model NewsComment {
+  id        Int      @id @default(autoincrement())
+  articleId Int
+  name      String
+  handle    String?
+  message   String   @db.Text
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
 model Match {
   id          Int     @id @default(autoincrement())
   date        String
@@ -142,5 +152,11 @@ model FanChallenge {
   mediaUrl  String   @db.Text
   mediaType String
   approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model EmailSubscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
   createdAt DateTime @default(now())
 }

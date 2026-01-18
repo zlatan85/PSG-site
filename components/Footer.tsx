@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import EmailSubscribeForm from './EmailSubscribeForm';
 import { defaultFooterSettings, readFooterSettings } from '../lib/footer-settings-store';
 
 export default async function Footer() {
@@ -40,19 +41,7 @@ export default async function Footer() {
               {footerSettings.alertsTitle}
             </h4>
             <p className="text-gray-300">{footerSettings.alertsText}</p>
-            <div className="flex flex-col gap-3">
-              <input
-                type="email"
-                placeholder="Ton email"
-                className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-              />
-              <button
-                type="button"
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
-              >
-                {footerSettings.alertsCtaLabel}
-              </button>
-            </div>
+            <EmailSubscribeForm ctaLabel={footerSettings.alertsCtaLabel} />
             <p className="text-xs text-gray-500">Desinscription en un clic.</p>
           </div>
         </div>
@@ -63,6 +52,8 @@ export default async function Footer() {
             <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
             <Link href="/history" className="hover:text-white transition-colors">Histoire</Link>
             <Link href="/transfers" className="hover:text-white transition-colors">Mercato</Link>
+            <Link href="/legal" className="hover:text-white transition-colors">Mentions legales</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Confidentialite</Link>
           </div>
         </div>
       </div>

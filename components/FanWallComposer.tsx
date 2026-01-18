@@ -20,9 +20,9 @@ export default function FanWallComposer() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
   const [verifyInput, setVerifyInput] = useState('');
   const [verifyStatus, setVerifyStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
 
   const loadMe = async () => {
     try {
@@ -65,9 +65,6 @@ export default function FanWallComposer() {
       }
 
       const data = await response.json();
-      if (data?.verificationCode) {
-        setVerificationCode(String(data.verificationCode));
-      }
       await loadMe();
       setPassword('');
     } catch (authError) {
@@ -91,11 +88,30 @@ export default function FanWallComposer() {
       }
       setVerifyStatus('ok');
       setVerifyInput('');
-      setVerificationCode('');
       await loadMe();
     } catch (verifyError) {
       console.error('Verify error:', verifyError);
       setVerifyStatus('error');
+    }
+  };
+
+  const handleResend = async () => {
+    if (!user) return;
+    setResendStatus('sending');
+    try {
+      const response = await fetch('/api/auth/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      if (!response.ok) {
+        setResendStatus('error');
+        return;
+      }
+      setResendStatus('ok');
+    } catch (resendError) {
+      console.error('Resend error:', resendError);
+      setResendStatus('error');
     }
   };
 
@@ -151,11 +167,6 @@ export default function FanWallComposer() {
           />
         </div>
         {error && <p className="text-xs text-red-200">{error}</p>}
-        {verificationCode && (
-          <p className="text-xs text-gray-300">
-            Code de verification (demo): <span className="text-white font-semibold">{verificationCode}</span>
-          </p>
-        )}
         <button
           type="button"
           onClick={handleAuth}
@@ -189,14 +200,18 @@ export default function FanWallComposer() {
           >
             {verifyStatus === 'sending' ? 'Verification...' : 'Verifier'}
           </button>
+          <button
+            type="button"
+            onClick={handleResend}
+            className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors"
+          >
+            Renvoyer le code
+          </button>
         </div>
-        {verificationCode && (
-          <p className="text-xs text-gray-300">
-            Code de verification (demo): <span className="text-white font-semibold">{verificationCode}</span>
-          </p>
-        )}
-        {verifyStatus === 'error' && (
-          <p className="text-xs text-red-200">Code invalide ou expire.</p>
+        {verifyStatus === 'error' && <p className="text-xs text-red-200">Code invalide ou expire.</p>}
+        {resendStatus === 'ok' && <p className="text-xs text-green-200">Email renvoye.</p>}
+        {resendStatus === 'error' && (
+          <p className="text-xs text-red-200">Impossible d&apos;envoyer le code.</p>
         )}
       </div>
     );

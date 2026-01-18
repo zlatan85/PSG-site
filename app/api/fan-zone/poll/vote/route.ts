@@ -1,9 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { defaultFanZonePoll, readFanZonePoll, writeFanZonePoll } from '../../../../../lib/fan-zone-poll-store';
+import { getClientFingerprint, isRateLimited } from '../../../../../lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const clientKey = `poll-vote:${getClientFingerprint(request.headers)}`;
+  if (isRateLimited(clientKey, 30_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const payload = await request.json();
   const index = Number(payload?.index);
   if (!Number.isFinite(index)) {
