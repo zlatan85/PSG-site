@@ -15,11 +15,13 @@
     "axios": "^1.13.2",
     "framer-motion": "^12.23.26",
     "next": "16.0.10",
+    "nodemailer": "^6.9.16",
     "react": "19.2.1",
     "react-dom": "19.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/nodemailer": "^6.4.17",
     "prisma": "^6.5.0",
     "@types/node": "^20",
     "@types/react": "^19",
