@@ -2487,7 +2487,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => insertMarkdown('![Legende](https://exemple.com/image.jpg)')}
+                    onClick={() => insertMarkdown('![Legende](/uploads/mon-image.jpg)')}
                     className="rounded-md bg-white/10 px-3 py-1 text-white hover:bg-white/20"
                   >
                     Image
@@ -2495,15 +2495,18 @@ export default function AdminPage() {
                 </div>
                 <p className="text-xs text-gray-400">
                   Raccourcis markdown: ## Titre, ### Sous-titre, - Liste, &gt; Citation, **gras**, *italique*,
-                  ![legende](url "caption").
+                  ![legende](/uploads/mon-image.jpg).
                 </p>
                 <input
                   type="url"
-                  placeholder="URL de l'image"
+                  placeholder="URL de l'image (ex: /uploads/mon-image.jpg)"
                   value={form.image}
                   onChange={handleChange('image')}
                   className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                 />
+                <p className="text-xs text-gray-400">
+                  Astuce: depose tes images dans `public/uploads` puis utilise `/uploads/nom-fichier.jpg`.
+                </p>
                 <input
                   type="date"
                   value={form.date}
