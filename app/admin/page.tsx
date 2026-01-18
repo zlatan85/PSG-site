@@ -1164,6 +1164,20 @@ export default function AdminPage() {
     setFooterSettings((current) => ({ ...current, [field]: event.target.value }));
   };
 
+  const normalizeStandings = (rows: StandingRow[]) =>
+    rows.map((row, idx) => ({ ...row, pos: idx + 1 }));
+
+  const reorderStandingsByPos = (rows: StandingRow[]) => {
+    const withIndex = rows.map((row, index) => ({ row, index }));
+    withIndex.sort((a, b) => {
+      if (a.row.pos !== b.row.pos) {
+        return a.row.pos - b.row.pos;
+      }
+      return a.index - b.index;
+    });
+    return normalizeStandings(withIndex.map((item) => item.row));
+  };
+
   const updateStandingsRow = (
     table: keyof StandingsPayload,
     index: number,
@@ -1179,6 +1193,11 @@ export default function AdminPage() {
         row[field] = Number(value);
       }
       nextTable[index] = row;
+      if (field === 'pos') {
+        const clamped = Number.isFinite(row.pos) ? Math.max(1, Math.floor(row.pos)) : index + 1;
+        nextTable[index] = { ...row, pos: clamped };
+        return { ...current, [table]: reorderStandingsByPos(nextTable) };
+      }
       return { ...current, [table]: nextTable };
     });
   };
@@ -1186,17 +1205,17 @@ export default function AdminPage() {
   const addStandingsRow = (table: keyof StandingsPayload) => {
     setStandings((current) => ({
       ...current,
-      [table]: [
+      [table]: normalizeStandings([
         ...current[table],
         { pos: current[table].length + 1, club: 'Club', pts: 0, j: 0, g: 0, n: 0, p: 0, diff: '+0' },
-      ],
+      ]),
     }));
   };
 
   const removeStandingsRow = (table: keyof StandingsPayload, index: number) => {
     setStandings((current) => ({
       ...current,
-      [table]: current[table].filter((_, rowIndex) => rowIndex !== index),
+      [table]: normalizeStandings(current[table].filter((_, rowIndex) => rowIndex !== index)),
     }));
   };
 
