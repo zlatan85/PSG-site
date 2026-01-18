@@ -5,7 +5,13 @@ import { defaultHistorySettings, readHistorySettings } from '../../lib/history-s
 export const dynamic = 'force-dynamic';
 
 export default async function HistoryPage() {
-  const settings = (await readHistorySettings()) ?? defaultHistorySettings;
+  const stored = (await readHistorySettings()) ?? null;
+  const settings = {
+    ...defaultHistorySettings,
+    ...(stored || {}),
+    stats: Array.isArray(stored?.stats) ? stored.stats : defaultHistorySettings.stats,
+    timeline: Array.isArray(stored?.timeline) ? stored.timeline : defaultHistorySettings.timeline,
+  };
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
