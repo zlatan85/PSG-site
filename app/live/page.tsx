@@ -71,7 +71,11 @@ export default async function LiveMatchPage() {
     ? { ...liveMatch.away, name: liveOverrides!.awayName || liveMatch.away.name, score: liveOverrides!.awayScore }
     : liveMatch.away;
 
-  const starters = hasOverrides ? liveOverrides!.startersHome : liveMatch.lineups.home;
+  const starters = hasOverrides
+    ? liveOverrides!.startersHome
+    : Array.isArray(liveMatch.lineups?.home)
+      ? liveMatch.lineups.home
+      : [];
   const bench = hasOverrides ? liveOverrides!.benchHome : [];
   const formation = hasOverrides ? liveOverrides!.formation : '4-3-3';
 
@@ -93,6 +97,10 @@ export default async function LiveMatchPage() {
 
   const lineup = buildLineup(starters, formation);
   const displayLines = [...lineup.lines].reverse();
+  const safeEvents = Array.isArray(liveMatch.events) ? liveMatch.events : [];
+  const safeMoment = liveMatch.moment ?? { title: 'Moment du match', description: '' };
+  const safeNextMatch =
+    liveMatch.nextMatch ?? { competition: 'Ligue 1', opponent: 'Adversaire', date: new Date().toISOString(), venue: '' };
 
   return (
     <div className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
@@ -169,16 +177,16 @@ export default async function LiveMatchPage() {
           <ScaleIn delay={0.35}>
             <div className="glass rounded-2xl p-8 space-y-6">
               <div>
-                <h3 className="text-xl font-semibold text-white mb-3">{liveMatch.moment.title}</h3>
-                <p className="text-gray-300">{liveMatch.moment.description}</p>
+                <h3 className="text-xl font-semibold text-white mb-3">{safeMoment.title}</h3>
+                <p className="text-gray-300">{safeMoment.description}</p>
               </div>
               <div>
                 <h4 className="text-lg font-semibold text-white mb-3">Prochain match</h4>
                 <div className="rounded-xl bg-white/10 p-4">
-                  <p className="text-sm text-gray-300">{liveMatch.nextMatch.competition}</p>
-                  <p className="text-lg text-white font-semibold">PSG vs {liveMatch.nextMatch.opponent}</p>
+                  <p className="text-sm text-gray-300">{safeNextMatch.competition}</p>
+                  <p className="text-lg text-white font-semibold">PSG vs {safeNextMatch.opponent}</p>
                   <p className="text-sm text-gray-300">
-                    {new Date(liveMatch.nextMatch.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} · {liveMatch.nextMatch.venue}
+                    {new Date(safeNextMatch.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} · {safeNextMatch.venue}
                   </p>
                 </div>
               </div>
@@ -191,7 +199,7 @@ export default async function LiveMatchPage() {
             <div className="glass rounded-2xl p-8">
               <h3 className="text-2xl font-semibold text-white mb-6">Timeline Live</h3>
               <div className="space-y-4">
-                {liveMatch.events.map((event) => (
+                {safeEvents.map((event) => (
                   <div key={`${event.minute}-${event.player}`} className="flex items-start gap-4 rounded-xl bg-white/5 p-4">
                     <div className="text-lg font-semibold text-white w-12 text-center">{event.minute}&apos;</div>
                     <div className="flex-1">
