@@ -37,9 +37,11 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [name, setName] = useState('');
   const [authError, setAuthError] = useState('');
+  const [authMessage, setAuthMessage] = useState('');
   const [verifyInput, setVerifyInput] = useState('');
   const [verifyStatus, setVerifyStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const loadMe = async () => {
     try {
@@ -81,8 +83,17 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
     loadComments();
   }, [articleId]);
 
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setTimeout(() => {
+      setResendCooldown((current) => Math.max(0, current - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
+
   const handleAuth = async () => {
     setAuthError('');
+    setAuthMessage('');
     const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
     const payload = authMode === 'login' ? { email, password } : { name, email, password };
     try {
@@ -96,6 +107,9 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
         return;
       }
       setPassword('');
+      if (authMode === 'register') {
+        setAuthMessage('Compte cree. Un code de verification a ete envoye.');
+      }
       await loadMe();
     } catch (error) {
       console.error('Auth error:', error);
@@ -127,6 +141,7 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
 
   const handleResend = async () => {
     if (!user) return;
+    if (resendCooldown > 0) return;
     setResendStatus('sending');
     try {
       const response = await fetch('/api/auth/resend', {
@@ -139,6 +154,7 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
         return;
       }
       setResendStatus('ok');
+      setResendCooldown(30);
     } catch (error) {
       console.error('Resend error:', error);
       setResendStatus('error');
@@ -199,6 +215,7 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
               {authMode === 'login' ? 'Creer un compte' : "J'ai deja un compte"}
             </button>
           </div>
+          {authMessage && <p className="text-xs text-green-200">{authMessage}</p>}
           <div className="grid gap-3 sm:grid-cols-2">
             {authMode === 'register' && (
               <input
@@ -256,12 +273,14 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
             <button
               type="button"
               onClick={handleResend}
-              className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors"
+              className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors disabled:opacity-60"
+              disabled={resendStatus === 'sending' || resendCooldown > 0}
             >
-              Renvoyer le code
+              {resendCooldown > 0 ? `Renvoyer (${resendCooldown}s)` : 'Renvoyer le code'}
             </button>
           </div>
           {verifyStatus === 'error' && <p className="text-xs text-red-200">Code invalide ou expire.</p>}
+          {verifyStatus === 'ok' && <p className="text-xs text-green-200">Email verifie. Merci !</p>}
           {resendStatus === 'ok' && <p className="text-xs text-green-200">Email renvoye.</p>}
           {resendStatus === 'error' && (
             <p className="text-xs text-red-200">Impossible d&apos;envoyer le code.</p>

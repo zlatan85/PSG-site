@@ -16,6 +16,7 @@ export default function FanWallComposer() {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [mode, setMode] = useState<AuthMode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -23,6 +24,7 @@ export default function FanWallComposer() {
   const [verifyInput, setVerifyInput] = useState('');
   const [verifyStatus, setVerifyStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const loadMe = async () => {
     try {
@@ -46,8 +48,17 @@ export default function FanWallComposer() {
     loadMe();
   }, []);
 
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setTimeout(() => {
+      setResendCooldown((current) => Math.max(0, current - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
+
   const handleAuth = async () => {
     setError('');
+    setMessage('');
     const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
     const payload = mode === 'login' ? { email, password } : { name, email, password };
 
@@ -65,6 +76,9 @@ export default function FanWallComposer() {
       }
 
       const data = await response.json();
+      if (mode === 'register') {
+        setMessage('Compte cree. Un code de verification a ete envoye.');
+      }
       await loadMe();
       setPassword('');
     } catch (authError) {
@@ -97,6 +111,7 @@ export default function FanWallComposer() {
 
   const handleResend = async () => {
     if (!user) return;
+    if (resendCooldown > 0) return;
     setResendStatus('sending');
     try {
       const response = await fetch('/api/auth/resend', {
@@ -109,6 +124,7 @@ export default function FanWallComposer() {
         return;
       }
       setResendStatus('ok');
+      setResendCooldown(30);
     } catch (resendError) {
       console.error('Resend error:', resendError);
       setResendStatus('error');
@@ -167,6 +183,7 @@ export default function FanWallComposer() {
           />
         </div>
         {error && <p className="text-xs text-red-200">{error}</p>}
+        {message && <p className="text-xs text-green-200">{message}</p>}
         <button
           type="button"
           onClick={handleAuth}
@@ -203,12 +220,14 @@ export default function FanWallComposer() {
           <button
             type="button"
             onClick={handleResend}
-            className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors"
+            className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors disabled:opacity-60"
+            disabled={resendStatus === 'sending' || resendCooldown > 0}
           >
-            Renvoyer le code
+            {resendCooldown > 0 ? `Renvoyer (${resendCooldown}s)` : 'Renvoyer le code'}
           </button>
         </div>
         {verifyStatus === 'error' && <p className="text-xs text-red-200">Code invalide ou expire.</p>}
+        {verifyStatus === 'ok' && <p className="text-xs text-green-200">Email verifie. Merci !</p>}
         {resendStatus === 'ok' && <p className="text-xs text-green-200">Email renvoye.</p>}
         {resendStatus === 'error' && (
           <p className="text-xs text-red-200">Impossible d&apos;envoyer le code.</p>
