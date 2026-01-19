@@ -344,46 +344,61 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
             <p className="text-sm text-red-300">{article.date}</p>
             <h1 className="text-4xl font-bold text-white sm:text-5xl">{article.title}</h1>
             <p className="text-gray-300">{article.excerpt}</p>
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <div className="flex flex-col items-center justify-center gap-3 pt-2 sm:flex-row sm:flex-wrap">
               <button
                 type="button"
                 onClick={handleLike}
-                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-gradient-to-r from-red-500/20 via-white/10 to-white/5 px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_30px_-20px_rgba(239,68,68,0.8)] transition-colors hover:border-red-300/60 hover:bg-white/20 disabled:opacity-60"
                 disabled={likeStatus === 'loading' || likeStatus === 'liked'}
               >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current text-red-300">
+                  <path d="M12 20.3l-1.45-1.32C5.4 14.36 2 11.28 2 7.5 2 5.02 4.02 3 6.5 3c1.74 0 3.41.81 4.5 2.09C12.09 3.81 13.76 3 15.5 3 17.98 3 20 5.02 20 7.5c0 3.78-3.4 6.86-8.55 11.48L12 20.3z" />
+                </svg>
                 <span>{likeStatus === 'liked' ? 'Merci !' : "J'aime"}</span>
                 <span className="text-xs text-gray-300">({likes})</span>
               </button>
-              <div className="flex flex-wrap items-center gap-2 text-xs">
+              <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
                 <a
                   href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(article.title)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-gray-200 hover:border-white/40 hover:text-white hover:bg-white/15 transition-colors"
                 >
-                  Partager sur X
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                    <path d="M3.5 3h3.9l4.1 5.4L16.6 3H20l-6.2 7.6L20.5 21h-3.9l-4.6-6-5 6H3.6l6.6-7.8L3.5 3z" />
+                  </svg>
+                  X
                 </a>
                 <a
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-gray-200 hover:border-white/40 hover:text-white hover:bg-white/15 transition-colors"
                 >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                    <path d="M13.5 9H16V6h-2.5C11.6 6 10 7.6 10 9.5V11H8v3h2v6h3v-6h2.2l.8-3H13V9.5c0-.3.2-.5.5-.5z" />
+                  </svg>
                   Facebook
                 </a>
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${shareUrl}`)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-gray-200 hover:border-white/40 hover:text-white hover:bg-white/15 transition-colors"
                 >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                    <path d="M12 3a8.9 8.9 0 00-7.7 13.2L3 21l4.9-1.3A9 9 0 1012 3zm4.7 12.5c-.2.6-1 1.1-1.6 1.2-.4.1-.9.1-1.4 0-1.6-.5-2.7-1.4-3.8-2.5-1.2-1.1-2-2.5-2.4-4-.1-.5-.1-1 0-1.4.1-.6.6-1.4 1.2-1.6.3-.1.6 0 .8.2.2.2.7 1.5.8 1.6.1.2.1.4 0 .6-.2.2-.4.6-.2.9.3.6 1.1 1.5 2.2 2.2.3.2.7 0 .9-.2.2-.2.4-.2.6 0 .1.1 1.4.6 1.6.8.2.2.3.5.2.8z" />
+                  </svg>
                   WhatsApp
                 </a>
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-gray-200 hover:border-white/40 hover:text-white hover:bg-white/15 transition-colors"
                 >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                    <path d="M16 1H6a2 2 0 00-2 2v12h2V3h10V1zm3 4H10a2 2 0 00-2 2v14a2 2 0 002 2h9a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H10V7h9v14z" />
+                  </svg>
                   Copier le lien
                 </button>
               </div>
