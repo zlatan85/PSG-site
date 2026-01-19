@@ -163,6 +163,10 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [likes, setLikes] = useState(0);
+  const [likeStatus, setLikeStatus] = useState<'idle' | 'loading' | 'liked' | 'error'>('idle');
+  const [shareUrl, setShareUrl] = useState('');
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'ok' | 'error'>('idle');
 
   useEffect(() => {
     const load = async () => {
@@ -221,6 +225,68 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
     ? numericId
     : article?.id ?? null;
 
+  useEffect(() => {
+    if (!commentArticleId) return;
+    const loadLikes = async () => {
+      try {
+        const response = await fetch(`/api/news-likes/${commentArticleId}`);
+        if (!response.ok) {
+          throw new Error('Request failed');
+        }
+        const data = await response.json();
+        setLikes(Number(data?.count) || 0);
+      } catch (error) {
+        console.error('Failed to load likes:', error);
+      }
+    };
+    loadLikes();
+  }, [commentArticleId]);
+
+  useEffect(() => {
+    if (!commentArticleId) return;
+    try {
+      const stored = window.localStorage.getItem(`article-liked:${commentArticleId}`);
+      if (stored === '1') {
+        setLikeStatus('liked');
+      }
+    } catch (error) {
+      console.warn('Failed to read like state:', error);
+    }
+  }, [commentArticleId]);
+
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
+
+  const handleLike = async () => {
+    if (!commentArticleId || likeStatus === 'liked' || likeStatus === 'loading') return;
+    setLikeStatus('loading');
+    try {
+      const response = await fetch(`/api/news-likes/${commentArticleId}`, { method: 'POST' });
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+      const data = await response.json();
+      setLikes(Number(data?.count) || likes + 1);
+      setLikeStatus('liked');
+      window.localStorage.setItem(`article-liked:${commentArticleId}`, '1');
+    } catch (error) {
+      console.error('Failed to like article:', error);
+      setLikeStatus('error');
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopyStatus('ok');
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      setCopyStatus('error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen px-4 py-16 sm:px-6 lg:px-8 flex items-center justify-center">
@@ -278,6 +344,56 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
             <p className="text-sm text-red-300">{article.date}</p>
             <h1 className="text-4xl font-bold text-white sm:text-5xl">{article.title}</h1>
             <p className="text-gray-300">{article.excerpt}</p>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleLike}
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors disabled:opacity-60"
+                disabled={likeStatus === 'loading' || likeStatus === 'liked'}
+              >
+                <span>{likeStatus === 'liked' ? 'Merci !' : "J'aime"}</span>
+                <span className="text-xs text-gray-300">({likes})</span>
+              </button>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <a
+                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(article.title)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                >
+                  Partager sur X
+                </a>
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                >
+                  Facebook
+                </a>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${shareUrl}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                >
+                  WhatsApp
+                </a>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="rounded-full bg-white/10 px-3 py-2 text-gray-200 hover:text-white hover:bg-white/20 transition-colors"
+                >
+                  Copier le lien
+                </button>
+              </div>
+              {copyStatus === 'ok' && (
+                <span className="text-xs text-green-200">Lien copie.</span>
+              )}
+              {copyStatus === 'error' && (
+                <span className="text-xs text-red-200">Copie impossible.</span>
+              )}
+            </div>
           </div>
         </FadeIn>
 
