@@ -630,6 +630,7 @@ export default function AdminPage() {
   const [liveLoading, setLiveLoading] = useState(true);
   const [liveSaving, setLiveSaving] = useState(false);
   const [liveError, setLiveError] = useState<string | null>(null);
+  const [liveRefreshStatus, setLiveRefreshStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [fanWallPosts, setFanWallPosts] = useState<FanWallPost[]>([]);
   const [fanWallForm, setFanWallForm] = useState<FanWallPost>(emptyFanWallForm);
   const [editingFanWallId, setEditingFanWallId] = useState<number | null>(null);
@@ -861,12 +862,21 @@ export default function AdminPage() {
       }
       const data = await response.json();
       setLiveEvents(Array.isArray(data?.events) ? data.events : []);
+      return true;
     } catch (loadError) {
       console.error('Failed to load live match:', loadError);
       setLiveError('Impossible de charger le live match.');
+      return false;
     } finally {
       setLiveLoading(false);
     }
+  };
+
+  const refreshLiveFromApi = async () => {
+    setLiveRefreshStatus('loading');
+    const ok = await loadLiveMatch();
+    setLiveRefreshStatus(ok ? 'ok' : 'error');
+    window.setTimeout(() => setLiveRefreshStatus('idle'), 2000);
   };
 
   const loadFanWall = async () => {
@@ -2597,128 +2607,159 @@ export default function AdminPage() {
                   <div className="text-lg font-semibold text-white">Centre live - Compo manuelle</div>
                   <p className="text-sm text-gray-400">Score, statut et onze de depart pour le live.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={saveLiveOverrides}
-                  disabled={liveOverridesSaving}
-                  className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
-                >
-                  {liveOverridesSaving ? 'Sauvegarde...' : 'Sauvegarder la compo'}
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={refreshLiveFromApi}
+                    disabled={liveRefreshStatus === 'loading'}
+                    className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-colors disabled:opacity-60"
+                  >
+                    {liveRefreshStatus === 'loading' ? 'Synchro...' : 'Rafraichir API Football'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveLiveOverrides}
+                    disabled={liveOverridesSaving}
+                    className="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-60"
+                  >
+                    {liveOverridesSaving ? 'Sauvegarde...' : 'Sauvegarder la compo'}
+                  </button>
+                </div>
               </div>
 
               {liveOverridesError && <div className="text-sm text-red-300">{liveOverridesError}</div>}
+              {liveRefreshStatus === 'ok' && (
+                <div className="text-sm text-green-200">Live actualise depuis l'API.</div>
+              )}
+              {liveRefreshStatus === 'error' && (
+                <div className="text-sm text-red-200">Echec de la synchronisation live.</div>
+              )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <select
-                  value={liveOverridesForm.status}
-                  onChange={handleLiveOverridesChange('status')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-400"
-                >
-                  <option value="live" className="bg-blue-900">Live</option>
-                  <option value="upcoming" className="bg-blue-900">A venir</option>
-                  <option value="finished" className="bg-blue-900">Termine</option>
-                </select>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    type="number"
-                    placeholder="Minute"
-                    value={liveOverridesForm.minute}
-                    onChange={handleLiveOverridesChange('minute')}
-                    className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Periode (1H/2H)"
-                    value={liveOverridesForm.period}
-                    onChange={handleLiveOverridesChange('period')}
-                    className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                  />
+              <div className="grid gap-4">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+                  <div className="text-sm text-gray-300 font-semibold">Etat du match</div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <select
+                      value={liveOverridesForm.status}
+                      onChange={handleLiveOverridesChange('status')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                    >
+                      <option value="live" className="bg-blue-900">Live</option>
+                      <option value="upcoming" className="bg-blue-900">A venir</option>
+                      <option value="finished" className="bg-blue-900">Termine</option>
+                    </select>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <input
+                        type="number"
+                        placeholder="Minute"
+                        value={liveOverridesForm.minute}
+                        onChange={handleLiveOverridesChange('minute')}
+                        className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Periode (1H/2H)"
+                        value={liveOverridesForm.period}
+                        onChange={handleLiveOverridesChange('period')}
+                        className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Competition"
-                  value={liveOverridesForm.competition}
-                  onChange={handleLiveOverridesChange('competition')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Stade"
-                  value={liveOverridesForm.stadium}
-                  onChange={handleLiveOverridesChange('stadium')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Arbitre"
-                  value={liveOverridesForm.referee}
-                  onChange={handleLiveOverridesChange('referee')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Coup d'envoi (YYYY-MM-DDTHH:mm)"
-                  value={liveOverridesForm.kickoff}
-                  onChange={handleLiveOverridesChange('kickoff')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <input
-                  type="text"
-                  placeholder="Equipe domicile"
-                  value={liveOverridesForm.homeName}
-                  onChange={handleLiveOverridesChange('homeName')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Equipe exterieure"
-                  value={liveOverridesForm.awayName}
-                  onChange={handleLiveOverridesChange('awayName')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <input
-                  type="number"
-                  placeholder="Score domicile"
-                  value={liveOverridesForm.homeScore}
-                  onChange={handleLiveOverridesChange('homeScore')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <input
-                  type="number"
-                  placeholder="Score exterieur"
-                  value={liveOverridesForm.awayScore}
-                  onChange={handleLiveOverridesChange('awayScore')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <input
-                  type="text"
-                  placeholder="Formation (ex: 4-3-3)"
-                  value={liveOverridesForm.formation}
-                  onChange={handleLiveOverridesChange('formation')}
-                  className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <div className="text-xs text-gray-400 flex items-center">
-                  Un joueur par ligne (11 titulaires).
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+                  <div className="text-sm text-gray-300 font-semibold">Infos match</div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="Competition"
+                      value={liveOverridesForm.competition}
+                      onChange={handleLiveOverridesChange('competition')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Stade"
+                      value={liveOverridesForm.stadium}
+                      onChange={handleLiveOverridesChange('stadium')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Arbitre"
+                      value={liveOverridesForm.referee}
+                      onChange={handleLiveOverridesChange('referee')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Coup d'envoi (YYYY-MM-DDTHH:mm)"
+                      value={liveOverridesForm.kickoff}
+                      onChange={handleLiveOverridesChange('kickoff')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
                 </div>
-                <textarea
-                  placeholder="Titulaires (1 par ligne)"
-                  value={liveOverridesForm.startersHomeText}
-                  onChange={handleLiveOverridesChange('startersHomeText')}
-                  className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
-                <textarea
-                  placeholder="Remplacants (1 par ligne)"
-                  value={liveOverridesForm.benchHomeText}
-                  onChange={handleLiveOverridesChange('benchHomeText')}
-                  className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                />
+
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+                  <div className="text-sm text-gray-300 font-semibold">Equipes & score</div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="Equipe domicile"
+                      value={liveOverridesForm.homeName}
+                      onChange={handleLiveOverridesChange('homeName')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Equipe exterieure"
+                      value={liveOverridesForm.awayName}
+                      onChange={handleLiveOverridesChange('awayName')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Score domicile"
+                      value={liveOverridesForm.homeScore}
+                      onChange={handleLiveOverridesChange('homeScore')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Score exterieur"
+                      value={liveOverridesForm.awayScore}
+                      onChange={handleLiveOverridesChange('awayScore')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Formation (ex: 4-3-3)"
+                      value={liveOverridesForm.formation}
+                      onChange={handleLiveOverridesChange('formation')}
+                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+                  <div className="text-sm text-gray-300 font-semibold">Composition</div>
+                  <div className="text-xs text-gray-400">Un joueur par ligne (11 titulaires).</div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <textarea
+                      placeholder="Titulaires (1 par ligne)"
+                      value={liveOverridesForm.startersHomeText}
+                      onChange={handleLiveOverridesChange('startersHomeText')}
+                      className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Remplacants (1 par ligne)"
+                      value={liveOverridesForm.benchHomeText}
+                      onChange={handleLiveOverridesChange('benchHomeText')}
+                      className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </FadeIn>
