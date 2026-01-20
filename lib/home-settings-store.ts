@@ -27,6 +27,9 @@ export interface HomeSettings {
   supporterHubTitle: string;
   supporterHubSubtitle: string;
   spotlightLabel: string;
+  spotlightName: string;
+  spotlightText: string;
+  spotlightImage: string;
 }
 
 export const defaultHomeSettings: HomeSettings = {
@@ -55,6 +58,9 @@ export const defaultHomeSettings: HomeSettings = {
   supporterHubTitle: 'Espace supporters',
   supporterHubSubtitle: "Tout ce qu'il faut pour vivre PSG a fond.",
   spotlightLabel: 'Joueur a la une',
+  spotlightName: '',
+  spotlightText: '',
+  spotlightImage: '',
 };
 
 export async function readHomeSettings(): Promise<HomeSettings | null> {

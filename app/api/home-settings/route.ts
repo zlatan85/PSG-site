@@ -57,6 +57,9 @@ export async function PUT(request: Request) {
     supporterHubTitle: isNonEmptyString(payload?.supporterHubTitle) ? payload.supporterHubTitle.trim() : base.supporterHubTitle,
     supporterHubSubtitle: isNonEmptyString(payload?.supporterHubSubtitle) ? payload.supporterHubSubtitle.trim() : base.supporterHubSubtitle,
     spotlightLabel: isNonEmptyString(payload?.spotlightLabel) ? payload.spotlightLabel.trim() : base.spotlightLabel,
+    spotlightName: isNonEmptyString(payload?.spotlightName) ? payload.spotlightName.trim() : base.spotlightName,
+    spotlightText: isNonEmptyString(payload?.spotlightText) ? payload.spotlightText.trim() : base.spotlightText,
+    spotlightImage: isNonEmptyString(payload?.spotlightImage) ? payload.spotlightImage.trim() : base.spotlightImage,
   };
 
   await writeHomeSettings(nextSettings);

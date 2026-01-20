@@ -51,6 +51,14 @@ export default async function Home() {
   const fanWallTeaser = fanWallPosts.slice(0, 6);
   const featuredPlayer =
     squad.players.find((player) => player.group === 'forward') ?? squad.players[0];
+  const spotlightName = homeSettings.spotlightName?.trim() || featuredPlayer?.name || 'Le joueur du moment';
+  const spotlightText =
+    homeSettings.spotlightText?.trim() ||
+    (featuredPlayer
+      ? `${featuredPlayer.position} · #${featuredPlayer.number} · ${featuredPlayer.nationality}`
+      : 'Profil joueur, stats et moments forts.');
+  const spotlightImage =
+    homeSettings.spotlightImage?.trim() || featuredPlayer?.image || '/api/placeholder/800/900';
 
   return (
     <div className="min-h-screen">
@@ -399,14 +407,8 @@ export default async function Home() {
                   <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-sm text-gray-200">
                     {homeSettings.spotlightLabel}
                   </p>
-                  <h2 className="text-3xl font-bold text-white">
-                    {featuredPlayer ? featuredPlayer.name : 'Le joueur du moment'}
-                  </h2>
-                  <p className="text-gray-300">
-                    {featuredPlayer
-                      ? `${featuredPlayer.position} · #${featuredPlayer.number} · ${featuredPlayer.nationality}`
-                      : 'Profil joueur, stats et moments forts.'}
-                  </p>
+                  <h2 className="text-3xl font-bold text-white">{spotlightName}</h2>
+                  <p className="text-gray-300">{spotlightText}</p>
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href="/squad"
@@ -438,8 +440,8 @@ export default async function Home() {
                   <div className="absolute -inset-4 rounded-3xl bg-red-500/10 blur-2xl" />
                   <div className="relative overflow-hidden rounded-3xl border border-white/10">
                   <img
-                    src={featuredPlayer?.image || '/api/placeholder/800/900'}
-                    alt={featuredPlayer?.name || 'Joueur PSG'}
+                    src={spotlightImage}
+                    alt={spotlightName}
                     loading="lazy"
                     decoding="async"
                     className="h-[320px] w-full object-contain bg-black/40 sm:h-[380px]"

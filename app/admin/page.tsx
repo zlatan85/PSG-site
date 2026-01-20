@@ -243,6 +243,9 @@ interface HomeSettings {
   supporterHubTitle: string;
   supporterHubSubtitle: string;
   spotlightLabel: string;
+  spotlightName: string;
+  spotlightText: string;
+  spotlightImage: string;
 }
 
 interface FooterSettings {
@@ -334,6 +337,9 @@ const defaultHomeSettings: HomeSettings = {
   supporterHubTitle: 'Espace supporters',
   supporterHubSubtitle: "Tout ce qu'il faut pour vivre PSG a fond.",
   spotlightLabel: 'Joueur a la une',
+  spotlightName: '',
+  spotlightText: '',
+  spotlightImage: '',
 };
 
 const defaultFooterSettings: FooterSettings = {
@@ -2966,6 +2972,26 @@ export default function AdminPage() {
                       onChange={handleHomeSettingsChange('spotlightLabel')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
+                    <input
+                      type="text"
+                      placeholder="Nom du joueur"
+                      value={homeSettings.spotlightName}
+                      onChange={handleHomeSettingsChange('spotlightName')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <textarea
+                      placeholder="Texte du spotlight"
+                      value={homeSettings.spotlightText}
+                      onChange={handleHomeSettingsChange('spotlightText')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[90px]"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Image joueur (URL)"
+                      value={homeSettings.spotlightImage}
+                      onChange={handleHomeSettingsChange('spotlightImage')}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
                   </div>
 
                   {homeError && <div className="text-sm text-red-300">{homeError}</div>}
@@ -3005,6 +3031,10 @@ export default function AdminPage() {
               <div className="rounded-lg bg-white/5 p-4 text-sm text-gray-300">
                 <div className="text-white font-semibold">{homeSettings.fanZoneTitle}</div>
                 <p>{homeSettings.fanZoneSubtitle}</p>
+              </div>
+              <div className="rounded-lg bg-white/5 p-4 text-sm text-gray-300">
+                <div className="text-white font-semibold">{homeSettings.spotlightLabel}</div>
+                <p>{homeSettings.spotlightName || 'Nom du joueur'}</p>
               </div>
             </div>
           </FadeIn>
