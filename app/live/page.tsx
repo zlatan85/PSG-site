@@ -1,6 +1,7 @@
 import { FadeIn, ScaleIn } from '../../components/MotionWrapper';
 import { readLiveMatch } from '../../lib/live-match-store';
 import { readLiveOverrides } from '../../lib/live-overrides-store';
+import { defaultFanZonePoll, readFanZonePoll } from '../../lib/fan-zone-poll-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,11 @@ const eventLabel = (type: string) => {
 export default async function LiveMatchPage() {
   const liveMatch = await readLiveMatch();
   const liveOverrides = await readLiveOverrides();
+  const poll = (await readFanZonePoll()) ?? defaultFanZonePoll;
+  const pollOptions = Array.isArray(poll.options) ? poll.options.slice(0, 3) : [];
+  while (pollOptions.length < 3) {
+    pollOptions.push({ label: `Option ${pollOptions.length + 1}`, votes: 0 });
+  }
 
   if (!liveMatch) {
     return (
@@ -278,15 +284,15 @@ export default async function LiveMatchPage() {
 
               <div>
                 <h3 className="text-xl font-semibold text-white mb-3">Sondage supporters</h3>
-                <p className="text-gray-300 mb-4">Qui est le joueur du match pour l&apos;instant ?</p>
+                <p className="text-gray-300 mb-4">{poll.question}</p>
                 <div className="space-y-2">
-                  {['Mbappe', 'Dembele', 'Vitinha'].map((player) => (
+                  {pollOptions.map((option) => (
                     <button
-                      key={player}
+                      key={option.label}
                       className="w-full rounded-lg bg-white/10 px-4 py-2 text-left text-white hover:bg-white/20 transition-colors"
                       type="button"
                     >
-                      {player}
+                      {option.label}
                     </button>
                   ))}
                 </div>
