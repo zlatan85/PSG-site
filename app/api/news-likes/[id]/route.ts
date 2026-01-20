@@ -11,8 +11,17 @@ const parseArticleId = (raw: string | undefined) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-export async function GET(_: NextRequest, context: { params: { id?: string } }) {
-  const articleId = parseArticleId(context.params.id);
+const getArticleId = (request: NextRequest, context?: { params?: { id?: string } }) => {
+  const fromParams = context?.params?.id;
+  if (fromParams) {
+    return parseArticleId(fromParams);
+  }
+  const fallback = request.nextUrl.pathname.split('/').pop();
+  return parseArticleId(fallback);
+};
+
+export async function GET(request: NextRequest, context: { params?: { id?: string } }) {
+  const articleId = getArticleId(request, context);
   if (!articleId) {
     return NextResponse.json({ error: 'Invalid article id' }, { status: 400 });
   }
@@ -20,8 +29,8 @@ export async function GET(_: NextRequest, context: { params: { id?: string } }) 
   return NextResponse.json({ count });
 }
 
-export async function POST(request: NextRequest, context: { params: { id?: string } }) {
-  const articleId = parseArticleId(context.params.id);
+export async function POST(request: NextRequest, context: { params?: { id?: string } }) {
+  const articleId = getArticleId(request, context);
   if (!articleId) {
     return NextResponse.json({ error: 'Invalid article id' }, { status: 400 });
   }
