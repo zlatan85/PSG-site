@@ -81,6 +81,19 @@ type ApiFootEvent = {
   detail: string | null;
 };
 
+type FootballDataMatch = {
+  utcDate?: string;
+  status?: string;
+  competition?: { name?: string };
+  homeTeam?: { name?: string };
+  awayTeam?: { name?: string };
+  score?: {
+    fullTime?: { home?: number | null; away?: number | null };
+    halfTime?: { home?: number | null; away?: number | null };
+  };
+  venue?: string | null;
+};
+
 const apiCache: { timestamp: number; data: LiveMatchData | null } = {
   timestamp: 0,
   data: null,
@@ -260,9 +273,109 @@ const fetchLiveMatchFromApi = async (): Promise<LiveMatchData | null> => {
   return liveMatch;
 };
 
+const fetchLiveMatchFromFootballData = async (): Promise<LiveMatchData | null> => {
+  const token = process.env.FOOTBALL_DATA_TOKEN || process.env.FOOTBALL_DATA_KEY;
+  if (!token) return null;
+  if (Date.now() - apiCache.timestamp < 60_000) {
+    return apiCache.data;
+  }
+
+  const teamId = process.env.FOOTBALL_DATA_TEAM_ID ?? '524';
+  const response = await fetch(
+    `https://api.football-data.org/v4/teams/${teamId}/matches?status=IN_PLAY,PAUSED`,
+    {
+      headers: { 'X-Auth-Token': token },
+      next: { revalidate: 60 },
+    }
+  );
+
+  if (!response.ok) {
+    apiCache.timestamp = Date.now();
+    apiCache.data = null;
+    return null;
+  }
+
+  const data = (await response.json()) as { matches?: FootballDataMatch[] };
+  const match = data.matches?.[0];
+  if (!match) {
+    apiCache.timestamp = Date.now();
+    apiCache.data = null;
+    return null;
+  }
+
+  const kickoff = match.utcDate ?? new Date().toISOString();
+  const kickoffTime = new Date(kickoff);
+  const elapsed =
+    Number.isFinite(kickoffTime.getTime())
+      ? Math.max(0, Math.floor((Date.now() - kickoffTime.getTime()) / 60000))
+      : 0;
+  const statusRaw = (match.status ?? '').toUpperCase();
+  const isPaused = statusRaw === 'PAUSED' || statusRaw === 'HALF_TIME';
+  const homeScore =
+    match.score?.fullTime?.home ?? match.score?.halfTime?.home ?? 0;
+  const awayScore =
+    match.score?.fullTime?.away ?? match.score?.halfTime?.away ?? 0;
+  const homeName = match.homeTeam?.name ?? 'PSG';
+  const awayName = match.awayTeam?.name ?? 'Adversaire';
+
+  const liveMatch: LiveMatchData = {
+    status: 'live',
+    minute: isPaused ? 45 : Math.min(elapsed, 120),
+    period: isPaused ? 'HT' : 'LIVE',
+    competition: match.competition?.name ?? 'Match',
+    stadium: match.venue ?? 'Stade',
+    referee: 'N/A',
+    kickoff,
+    home: {
+      name: homeName,
+      score: homeScore,
+      shots: 0,
+      shotsOnTarget: 0,
+      possession: 0,
+      passes: 0,
+      passAccuracy: 0,
+      fouls: 0,
+      corners: 0,
+      offsides: 0,
+      xg: 0,
+    },
+    away: {
+      name: awayName,
+      score: awayScore,
+      shots: 0,
+      shotsOnTarget: 0,
+      possession: 0,
+      passes: 0,
+      passAccuracy: 0,
+      fouls: 0,
+      corners: 0,
+      offsides: 0,
+      xg: 0,
+    },
+    moment: {
+      title: 'Score en direct',
+      description: `${homeName} ${homeScore} - ${awayScore} ${awayName}`,
+    },
+    events: [],
+    lineups: { home: [], away: [] },
+    nextMatch: {
+      opponent: awayName,
+      date: kickoff,
+      competition: match.competition?.name ?? 'Match',
+      venue: match.venue ?? 'Stade',
+    },
+  };
+
+  apiCache.timestamp = Date.now();
+  apiCache.data = liveMatch;
+  return liveMatch;
+};
+
 export async function readLiveMatch(): Promise<LiveMatchData | null> {
   const apiLive = await fetchLiveMatchFromApi();
   if (apiLive) return apiLive;
+  const limitedLive = await fetchLiveMatchFromFootballData();
+  if (limitedLive) return limitedLive;
   const record = await prisma.liveMatch.findUnique({ where: { id: 1 } });
   if (!record) {
     return null;
