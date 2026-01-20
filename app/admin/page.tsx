@@ -713,7 +713,7 @@ export default function AdminPage() {
   );
 
   const pollOptions = useMemo(() => {
-    const options = [...fanZonePoll.options].slice(0, 3);
+    const options = Array.isArray(fanZonePoll.options) ? [...fanZonePoll.options].slice(0, 3) : [];
     while (options.length < 3) {
       options.push({ label: `Option ${options.length + 1}`, votes: 0 });
     }
@@ -1047,7 +1047,11 @@ export default function AdminPage() {
       setFanZonePollLoading(true);
       const response = await fetch('/api/fan-zone/poll');
       const data = await response.json();
-      setFanZonePoll(data ?? defaultFanZonePoll);
+      setFanZonePoll({
+        ...defaultFanZonePoll,
+        ...(data || {}),
+        options: Array.isArray(data?.options) ? data.options : defaultFanZonePoll.options,
+      });
     } catch (loadError) {
       console.error('Failed to load fan zone poll:', loadError);
       setFanZonePollError('Impossible de charger le sondage.');
