@@ -70,6 +70,19 @@ export default function ProfilePage() {
     }
   }, [user?.createdAt]);
 
+  const profileCompletion = useMemo(() => {
+    const fields = [
+      profile.handle,
+      profile.bio,
+      profile.favoritePlayer,
+      profile.location,
+      profile.avatarUrl,
+      profile.bannerUrl,
+    ];
+    const filled = fields.filter((value) => value && value.trim().length > 0).length;
+    return Math.round((filled / fields.length) * 100);
+  }, [profile]);
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -289,6 +302,15 @@ export default function ProfilePage() {
                     <p className="text-xs text-gray-400">{profile.handle ? `@${profile.handle}` : user?.email}</p>
                   </div>
                 </div>
+                <div className="mt-5">
+                  <div className="flex items-center justify-between text-xs text-gray-300">
+                    <span>Profil complete</span>
+                    <span>{profileCompletion}%</span>
+                  </div>
+                  <div className="mt-2 h-2 w-full rounded-full bg-white/10">
+                    <div className="h-2 rounded-full bg-red-500" style={{ width: `${profileCompletion}%` }} />
+                  </div>
+                </div>
                 <div className="mt-6 grid gap-3 text-sm text-gray-300 sm:grid-cols-3">
                   <div className="rounded-xl bg-white/5 p-3">
                     <div className="text-xs text-gray-400">Statut</div>
@@ -447,18 +469,18 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <input
-                      type="text"
-                      placeholder="URL avatar (ex: /uploads/mon-avatar.jpg)"
-                      value={profile.avatarUrl}
-                      onChange={(event) => setProfile((current) => ({ ...current, avatarUrl: event.target.value }))}
-                      className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                    />
-                    <input
-                      type="text"
-                      placeholder="URL bannere (ex: /uploads/ma-banniere.jpg)"
-                      value={profile.bannerUrl}
-                      onChange={(event) => setProfile((current) => ({ ...current, bannerUrl: event.target.value }))}
+                  <input
+                    type="text"
+                    placeholder="URL avatar (ex: /uploads/mon-avatar.jpg)"
+                    value={profile.avatarUrl}
+                    onChange={(event) => setProfile((current) => ({ ...current, avatarUrl: event.target.value }))}
+                    className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder="URL bannere (ex: /uploads/ma-banniere.jpg)"
+                    value={profile.bannerUrl}
+                    onChange={(event) => setProfile((current) => ({ ...current, bannerUrl: event.target.value }))}
                       className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                   </div>
@@ -483,6 +505,18 @@ export default function ProfilePage() {
                 <div>
                   <h2 className="text-xl font-semibold text-white">Experience supporter</h2>
                   <p className="text-sm text-gray-400">Des bonus pour animer ta saison.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3 text-sm">
+                  {[
+                    { label: 'Commentaires', value: '—' },
+                    { label: 'Likes recus', value: '—' },
+                    { label: 'Pronostics', value: '—' },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl bg-white/5 p-3 text-gray-300">
+                      <div className="text-xs text-gray-400">{item.label}</div>
+                      <div className="text-white font-semibold">{item.value}</div>
+                    </div>
+                  ))}
                 </div>
                 <div className="space-y-3">
                   {[
