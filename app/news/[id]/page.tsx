@@ -165,6 +165,7 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [likes, setLikes] = useState(0);
   const [likeStatus, setLikeStatus] = useState<'idle' | 'loading' | 'liked' | 'error'>('idle');
+  const [likeError, setLikeError] = useState('');
   const [shareUrl, setShareUrl] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'ok' | 'error'>('idle');
 
@@ -260,7 +261,10 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
 
   const handleLike = async () => {
     if (!commentArticleId || likeStatus === 'liked' || likeStatus === 'loading') return;
+    setLikeError('');
     setLikeStatus('loading');
+    const previousLikes = likes;
+    setLikes((current) => current + 1);
     try {
       const response = await fetch(`/api/news-likes/${commentArticleId}`, { method: 'POST' });
       if (!response.ok) {
@@ -272,7 +276,9 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
       window.localStorage.setItem(`article-liked:${commentArticleId}`, '1');
     } catch (error) {
       console.error('Failed to like article:', error);
+      setLikes(previousLikes);
       setLikeStatus('error');
+      setLikeError('Impossible de liker pour le moment.');
     }
   };
 
@@ -402,12 +408,12 @@ export default function NewsDetailPage({ params: pageParams }: NewsPageProps) {
                   Copier le lien
                 </button>
               </div>
-              {copyStatus === 'ok' && (
-                <span className="text-xs text-green-200">Lien copie.</span>
-              )}
-              {copyStatus === 'error' && (
-                <span className="text-xs text-red-200">Copie impossible.</span>
-              )}
+              <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-300">
+                {copyStatus === 'ok' && <span className="text-green-200">Lien copie.</span>}
+                {copyStatus === 'error' && <span className="text-red-200">Copie impossible.</span>}
+                {likeStatus === 'error' && <span className="text-red-200">{likeError}</span>}
+                {likeStatus === 'liked' && <span className="text-green-200">Merci pour ton soutien.</span>}
+              </div>
             </div>
           </div>
         </FadeIn>
