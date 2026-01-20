@@ -980,7 +980,7 @@ export default function AdminPage() {
   const loadStandings = async () => {
     try {
       setStandingsLoading(true);
-      const response = await fetch('/api/standings');
+      const response = await fetch('/api/standings?source=manual');
       const data = await response.json();
       if (data?.ligue1 && data?.championsLeague) {
         setStandings(data);
@@ -1770,7 +1770,7 @@ export default function AdminPage() {
     setStandingsSaving(true);
 
     try {
-      const response = await fetch('/api/standings', {
+      const response = await fetch('/api/standings?source=manual', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(standings),
