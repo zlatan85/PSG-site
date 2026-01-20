@@ -1,5 +1,6 @@
 import { prisma } from './db';
 import { Prisma } from '@prisma/client';
+import { fetchFootballDataMatches } from './football-data';
 
 export interface LiveMatchTeamStats {
   name: string;
@@ -316,11 +317,19 @@ const fetchLiveMatchFromFootballData = async (): Promise<LiveMatchData | null> =
   const awayScore =
     match.score?.fullTime?.away ?? match.score?.halfTime?.away ?? 0;
   const homeName = match.homeTeam?.name ?? 'PSG';
-  const awayName = match.awayTeam?.name ?? 'Adversaire';
+  const rawAwayName = match.awayTeam?.name ?? 'Adversaire';
+  const awayName = rawAwayName === homeName ? 'Adversaire' : rawAwayName;
+  const safeMinute =
+    isPaused ? 45 : elapsed > 0 && elapsed < 200 ? elapsed : 0;
+
+  const upcoming = await fetchFootballDataMatches();
+  const nextMatch = upcoming
+    ?.filter((item) => item.status === 'upcoming')
+    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))[0];
 
   const liveMatch: LiveMatchData = {
     status: 'live',
-    minute: isPaused ? 45 : Math.min(elapsed, 120),
+    minute: safeMinute,
     period: isPaused ? 'HT' : 'LIVE',
     competition: match.competition?.name ?? 'Match',
     stadium: match.venue ?? 'Stade',
@@ -358,12 +367,19 @@ const fetchLiveMatchFromFootballData = async (): Promise<LiveMatchData | null> =
     },
     events: [],
     lineups: { home: [], away: [] },
-    nextMatch: {
-      opponent: awayName,
-      date: kickoff,
-      competition: match.competition?.name ?? 'Match',
-      venue: match.venue ?? 'Stade',
-    },
+    nextMatch: nextMatch
+      ? {
+          opponent: nextMatch.away === nextMatch.home ? 'Adversaire' : nextMatch.away,
+          date: `${nextMatch.date}T${nextMatch.time}:00`,
+          competition: nextMatch.competition,
+          venue: nextMatch.stadium,
+        }
+      : {
+          opponent: awayName,
+          date: kickoff,
+          competition: match.competition?.name ?? 'Match',
+          venue: match.venue ?? 'Stade',
+        },
   };
 
   apiCache.timestamp = Date.now();
