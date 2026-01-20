@@ -1,17 +1,30 @@
 import { NextResponse } from 'next/server';
 import { readMatches, writeMatches } from '../../../lib/matches-store';
+import { fetchFootballDataMatches } from '../../../lib/football-data';
 
 export const dynamic = 'force-dynamic';
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
-export async function GET() {
+export async function GET(request: Request) {
+  const source = new URL(request.url).searchParams.get('source');
+  if (source !== 'manual') {
+    const apiMatches = await fetchFootballDataMatches();
+    if (apiMatches && apiMatches.length > 0) {
+      return NextResponse.json(apiMatches);
+    }
+  }
+
   const matches = await readMatches();
   return NextResponse.json(matches);
 }
 
 export async function POST(request: Request) {
+  const source = new URL(request.url).searchParams.get('source');
+  if (source !== 'manual') {
+    return NextResponse.json({ error: 'Manual source required' }, { status: 403 });
+  }
   const payload = await request.json();
   if (
     !isNonEmptyString(payload?.date) ||
@@ -45,6 +58,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const source = new URL(request.url).searchParams.get('source');
+  if (source !== 'manual') {
+    return NextResponse.json({ error: 'Manual source required' }, { status: 403 });
+  }
   const payload = await request.json();
   if (typeof payload?.id !== 'number') {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
@@ -76,6 +93,10 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const source = new URL(request.url).searchParams.get('source');
+  if (source !== 'manual') {
+    return NextResponse.json({ error: 'Manual source required' }, { status: 403 });
+  }
   const payload = await request.json();
   if (typeof payload?.id !== 'number') {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });

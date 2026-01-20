@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { FadeIn, ScaleIn } from '../components/MotionWrapper';
 import { readNews } from '../lib/news-store';
 import { readMatches } from '../lib/matches-store';
+import { fetchFootballDataMatches } from '../lib/football-data';
 import { readLiveMatch } from '../lib/live-match-store';
 import { readFanWall } from '../lib/fan-wall-store';
 import { readSquad } from '../lib/squad-store';
@@ -14,7 +15,8 @@ const sortByDateDesc = <T extends { date: string }>(items: T[]) =>
 
 export default async function Home() {
   const news = await readNews();
-  const matches = await readMatches();
+  const apiMatches = await fetchFootballDataMatches();
+  const matches = apiMatches && apiMatches.length > 0 ? apiMatches : await readMatches();
   const liveMatch = await readLiveMatch();
   const fanWallPosts = (await readFanWall()).filter((post) => post.approved);
   const squad = await readSquad();

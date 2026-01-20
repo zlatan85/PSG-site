@@ -826,7 +826,7 @@ export default function AdminPage() {
   const loadMatches = async () => {
     try {
       setMatchesLoading(true);
-      const response = await fetch('/api/matches');
+      const response = await fetch('/api/matches?source=manual');
       const data = await response.json();
       setMatches(Array.isArray(data) ? data : []);
     } catch (loadError) {
@@ -1501,7 +1501,7 @@ export default function AdminPage() {
         result: matchForm.result || undefined,
       };
 
-      const response = await fetch('/api/matches', {
+      const response = await fetch('/api/matches?source=manual', {
         method: editingMatchId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingMatchId ? { id: editingMatchId, ...payload } : payload),
@@ -2109,7 +2109,7 @@ export default function AdminPage() {
 
     try {
       setMatchSaving(true);
-      const response = await fetch('/api/matches', {
+      const response = await fetch('/api/matches?source=manual', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
