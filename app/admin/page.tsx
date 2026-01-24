@@ -246,6 +246,13 @@ interface HomeSettings {
   spotlightName: string;
   spotlightText: string;
   spotlightImage: string;
+  spotlightFirstName: string;
+  spotlightLastName: string;
+  spotlightAge: string;
+  spotlightPosition: string;
+  spotlightNationality: string;
+  spotlightGoals: string;
+  spotlightAssists: string;
 }
 
 interface FooterSettings {
@@ -340,6 +347,13 @@ const defaultHomeSettings: HomeSettings = {
   spotlightName: '',
   spotlightText: '',
   spotlightImage: '',
+  spotlightFirstName: '',
+  spotlightLastName: '',
+  spotlightAge: '',
+  spotlightPosition: '',
+  spotlightNationality: '',
+  spotlightGoals: '',
+  spotlightAssists: '',
 };
 
 const defaultFooterSettings: FooterSettings = {
@@ -2972,13 +2986,61 @@ export default function AdminPage() {
                       onChange={handleHomeSettingsChange('spotlightLabel')}
                       className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
-                    <input
-                      type="text"
-                      placeholder="Nom du joueur"
-                      value={homeSettings.spotlightName}
-                      onChange={handleHomeSettingsChange('spotlightName')}
-                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                    />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <input
+                        type="text"
+                        placeholder="Prenom"
+                        value={homeSettings.spotlightFirstName}
+                        onChange={handleHomeSettingsChange('spotlightFirstName')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Nom"
+                        value={homeSettings.spotlightLastName}
+                        onChange={handleHomeSettingsChange('spotlightLastName')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <input
+                        type="text"
+                        placeholder="Poste"
+                        value={homeSettings.spotlightPosition}
+                        onChange={handleHomeSettingsChange('spotlightPosition')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Age"
+                        value={homeSettings.spotlightAge}
+                        onChange={handleHomeSettingsChange('spotlightAge')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Nationalite"
+                        value={homeSettings.spotlightNationality}
+                        onChange={handleHomeSettingsChange('spotlightNationality')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <input
+                        type="text"
+                        placeholder="Buts"
+                        value={homeSettings.spotlightGoals}
+                        onChange={handleHomeSettingsChange('spotlightGoals')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Passes decisives"
+                        value={homeSettings.spotlightAssists}
+                        onChange={handleHomeSettingsChange('spotlightAssists')}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    </div>
                     <textarea
                       placeholder="Texte du spotlight"
                       value={homeSettings.spotlightText}

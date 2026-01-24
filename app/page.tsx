@@ -51,14 +51,25 @@ export default async function Home() {
   const fanWallTeaser = fanWallPosts.slice(0, 6);
   const featuredPlayer =
     squad.players.find((player) => player.group === 'forward') ?? squad.players[0];
-  const spotlightName = homeSettings.spotlightName?.trim() || featuredPlayer?.name || 'Le joueur du moment';
+  const spotlightFirstName = homeSettings.spotlightFirstName?.trim();
+  const spotlightLastName = homeSettings.spotlightLastName?.trim();
+  const spotlightName =
+    [spotlightFirstName, spotlightLastName].filter(Boolean).join(' ') ||
+    homeSettings.spotlightName?.trim() ||
+    featuredPlayer?.name ||
+    'Le joueur du moment';
+  const spotlightPosition =
+    homeSettings.spotlightPosition?.trim() || featuredPlayer?.position || 'Poste';
+  const spotlightAge = homeSettings.spotlightAge?.trim() || (featuredPlayer?.age ? String(featuredPlayer.age) : '');
+  const spotlightNationality =
+    homeSettings.spotlightNationality?.trim() || featuredPlayer?.nationality || 'Nationalite';
   const spotlightText =
     homeSettings.spotlightText?.trim() ||
-    (featuredPlayer
-      ? `${featuredPlayer.position} · #${featuredPlayer.number} · ${featuredPlayer.nationality}`
-      : 'Profil joueur, stats et moments forts.');
+    `${spotlightPosition}${spotlightAge ? ` · ${spotlightAge} ans` : ''} · ${spotlightNationality}`;
   const spotlightImage =
     homeSettings.spotlightImage?.trim() || featuredPlayer?.image || '/api/placeholder/800/900';
+  const spotlightGoals = homeSettings.spotlightGoals?.trim() || '0';
+  const spotlightAssists = homeSettings.spotlightAssists?.trim() || '0';
 
   return (
     <div className="min-h-screen">
@@ -425,9 +436,9 @@ export default async function Home() {
                   </div>
                   <div className="grid gap-4 sm:grid-cols-3">
                     {[
-                      { label: 'Buts', value: '12' },
-                      { label: 'Passes D', value: '7' },
-                      { label: 'Note fans', value: '9.1' },
+                      { label: 'Buts', value: spotlightGoals },
+                      { label: 'Passes D', value: spotlightAssists },
+                      { label: 'Age', value: spotlightAge || '--' },
                     ].map((stat) => (
                       <div key={stat.label} className="rounded-2xl bg-white/5 p-4 text-center">
                         <div className="text-2xl font-semibold text-white">{stat.value}</div>

@@ -60,6 +60,23 @@ export async function PUT(request: Request) {
     spotlightName: isNonEmptyString(payload?.spotlightName) ? payload.spotlightName.trim() : base.spotlightName,
     spotlightText: isNonEmptyString(payload?.spotlightText) ? payload.spotlightText.trim() : base.spotlightText,
     spotlightImage: isNonEmptyString(payload?.spotlightImage) ? payload.spotlightImage.trim() : base.spotlightImage,
+    spotlightFirstName: isNonEmptyString(payload?.spotlightFirstName)
+      ? payload.spotlightFirstName.trim()
+      : base.spotlightFirstName,
+    spotlightLastName: isNonEmptyString(payload?.spotlightLastName)
+      ? payload.spotlightLastName.trim()
+      : base.spotlightLastName,
+    spotlightAge: isNonEmptyString(payload?.spotlightAge) ? payload.spotlightAge.trim() : base.spotlightAge,
+    spotlightPosition: isNonEmptyString(payload?.spotlightPosition)
+      ? payload.spotlightPosition.trim()
+      : base.spotlightPosition,
+    spotlightNationality: isNonEmptyString(payload?.spotlightNationality)
+      ? payload.spotlightNationality.trim()
+      : base.spotlightNationality,
+    spotlightGoals: isNonEmptyString(payload?.spotlightGoals) ? payload.spotlightGoals.trim() : base.spotlightGoals,
+    spotlightAssists: isNonEmptyString(payload?.spotlightAssists)
+      ? payload.spotlightAssists.trim()
+      : base.spotlightAssists,
   };
 
   await writeHomeSettings(nextSettings);

@@ -30,6 +30,13 @@ export interface HomeSettings {
   spotlightName: string;
   spotlightText: string;
   spotlightImage: string;
+  spotlightFirstName: string;
+  spotlightLastName: string;
+  spotlightAge: string;
+  spotlightPosition: string;
+  spotlightNationality: string;
+  spotlightGoals: string;
+  spotlightAssists: string;
 }
 
 export const defaultHomeSettings: HomeSettings = {
@@ -61,6 +68,13 @@ export const defaultHomeSettings: HomeSettings = {
   spotlightName: '',
   spotlightText: '',
   spotlightImage: '',
+  spotlightFirstName: '',
+  spotlightLastName: '',
+  spotlightAge: '',
+  spotlightPosition: '',
+  spotlightNationality: '',
+  spotlightGoals: '',
+  spotlightAssists: '',
 };
 
 export async function readHomeSettings(): Promise<HomeSettings | null> {
