@@ -274,7 +274,11 @@ export default async function LiveMatchPage() {
                       <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/10" />
                       <div className="relative space-y-5">
                         {displayLines.map((line, lineIndex) => (
-                          <div key={`line-${lineIndex}`} className="flex flex-wrap justify-center gap-3">
+                          <div
+                            key={`line-${lineIndex}`}
+                            className="grid gap-3"
+                            style={{ gridTemplateColumns: `repeat(${Math.max(line.length, 1)}, minmax(0, 1fr))` }}
+                          >
                             {line.map((player) => {
                               const initials = player.name
                                 .split(' ')
@@ -282,7 +286,7 @@ export default async function LiveMatchPage() {
                                 .map((part) => part.charAt(0))
                                 .join('');
                               return (
-                                <div key={`${player.name}-${lineIndex}`} className="flex w-16 flex-col items-center">
+                                <div key={`${player.name}-${lineIndex}`} className="flex flex-col items-center">
                                   <div className="relative h-12 w-12 rounded-full border border-white/20 bg-white/10 shadow-sm">
                                     {player.image ? (
                                       <img
