@@ -69,10 +69,21 @@ const defaultTopStats = {
     { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
     { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },
   ],
+  clScorers: [
+    { pos: 1, player: 'K. Mbappe', club: 'PSG', goals: 0 },
+    { pos: 2, player: 'O. Dembele', club: 'PSG', goals: 0 },
+    { pos: 3, player: 'R. Kolo Muani', club: 'PSG', goals: 0 },
+  ],
+  clAssists: [
+    { pos: 1, player: 'A. Hakimi', club: 'PSG', assists: 0 },
+    { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
+    { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },
+  ],
 };
 
 export default function CalendarPage() {
   const [filter, setFilter] = useState('all');
+  const [showAllMatches, setShowAllMatches] = useState(false);
   const [matches, setMatches] = useState<MatchEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [standings, setStandings] = useState(defaultStandings);
@@ -95,6 +106,10 @@ export default function CalendarPage() {
 
     loadMatches();
   }, []);
+
+  useEffect(() => {
+    setShowAllMatches(false);
+  }, [filter]);
 
   useEffect(() => {
     const loadStandings = async () => {
@@ -120,7 +135,14 @@ export default function CalendarPage() {
         const response = await fetch('/api/top-stats');
         const data = await response.json();
         if (data?.scorers && data?.assists) {
-          setTopStats(data);
+          setTopStats({
+            ...defaultTopStats,
+            ...data,
+            scorers: Array.isArray(data.scorers) ? data.scorers : defaultTopStats.scorers,
+            assists: Array.isArray(data.assists) ? data.assists : defaultTopStats.assists,
+            clScorers: Array.isArray(data.clScorers) ? data.clScorers : defaultTopStats.clScorers,
+            clAssists: Array.isArray(data.clAssists) ? data.clAssists : defaultTopStats.clAssists,
+          });
         }
       } catch (error) {
         console.error('Failed to load top stats:', error);
@@ -156,6 +178,9 @@ export default function CalendarPage() {
 
     return aTime - bTime;
   });
+
+  const primaryMatches = sortedMatches.slice(0, 4);
+  const extraMatches = sortedMatches.slice(4);
 
   const getResultColor = (result?: string) => {
     switch (result) {
@@ -211,7 +236,7 @@ export default function CalendarPage() {
 
         {/* Matches List */}
         <div className="space-y-4">
-          {sortedMatches.map((match, index) => (
+          {primaryMatches.map((match, index) => (
             <ScaleIn key={match.id} delay={0.6 + index * 0.1}>
               <div className="glass rounded-lg p-6 border border-white/10 hover:border-white/20 transition-colors">
                 <div className="flex items-center justify-between flex-wrap gap-4">
@@ -261,6 +286,46 @@ export default function CalendarPage() {
             </ScaleIn>
           ))}
         </div>
+
+        {extraMatches.length > 0 && (
+          <FadeIn delay={0.75}>
+            <div className="mt-4 glass rounded-lg border border-white/10 p-4">
+              <button
+                type="button"
+                onClick={() => setShowAllMatches((current) => !current)}
+                className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors"
+              >
+                {showAllMatches
+                  ? 'Masquer les autres matchs'
+                  : `Voir ${extraMatches.length} matchs supplémentaires`}
+              </button>
+              {showAllMatches && (
+                <div className="mt-4 space-y-4">
+                  {extraMatches.map((match, index) => (
+                    <ScaleIn key={match.id} delay={0.8 + index * 0.05}>
+                      <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                          <div className="text-sm text-gray-300">
+                            <span className="text-white font-semibold">{match.home}</span> vs{' '}
+                            <span className="text-white font-semibold">{match.away}</span>
+                            <div className="text-xs text-gray-400 mt-1">
+                              {match.date} · {match.time} · {match.competition}
+                            </div>
+                          </div>
+                          {match.status === 'played' && (
+                            <div className={`text-sm font-semibold ${getResultColor(match.result)}`}>
+                              {match.score}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </ScaleIn>
+                  ))}
+                </div>
+              )}
+            </div>
+          </FadeIn>
+        )}
 
         {sortedMatches.length === 0 && (
           <FadeIn delay={0.8}>
@@ -408,6 +473,74 @@ export default function CalendarPage() {
                   </thead>
                   <tbody>
                     {topStats.assists.map((row) => (
+                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
+                        <td className="py-2">{row.pos}</td>
+                        <td className="py-2 text-white">{row.player}</td>
+                        <td className="py-2">{row.club}</td>
+                        <td className="py-2 text-right text-white font-semibold">{row.assists}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ScaleIn>
+        </div>
+
+        <div className="mt-12 grid gap-8 lg:grid-cols-2">
+          <ScaleIn delay={0.45}>
+            <div className="glass rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-white">Buteurs - Champions League</h2>
+                <span className="text-xs text-gray-400">
+                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-300">
+                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                    <tr>
+                      <th className="py-2 text-left">#</th>
+                      <th className="py-2 text-left">Joueur</th>
+                      <th className="py-2 text-left">Club</th>
+                      <th className="py-2 text-right">Buts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topStats.clScorers.map((row) => (
+                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
+                        <td className="py-2">{row.pos}</td>
+                        <td className="py-2 text-white">{row.player}</td>
+                        <td className="py-2">{row.club}</td>
+                        <td className="py-2 text-right text-white font-semibold">{row.goals}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ScaleIn>
+
+          <ScaleIn delay={0.5}>
+            <div className="glass rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-white">Passeurs - Champions League</h2>
+                <span className="text-xs text-gray-400">
+                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-300">
+                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                    <tr>
+                      <th className="py-2 text-left">#</th>
+                      <th className="py-2 text-left">Joueur</th>
+                      <th className="py-2 text-left">Club</th>
+                      <th className="py-2 text-right">Passes D</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topStats.clAssists.map((row) => (
                       <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
                         <td className="py-2">{row.pos}</td>
                         <td className="py-2 text-white">{row.player}</td>

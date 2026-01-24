@@ -18,6 +18,8 @@ export interface TopAssistRow {
 export interface TopStatsPayload {
   scorers: TopScorerRow[];
   assists: TopAssistRow[];
+  clScorers: TopScorerRow[];
+  clAssists: TopAssistRow[];
 }
 
 export const defaultTopStats: TopStatsPayload = {
@@ -27,6 +29,16 @@ export const defaultTopStats: TopStatsPayload = {
     { pos: 3, player: 'R. Kolo Muani', club: 'PSG', goals: 0 },
   ],
   assists: [
+    { pos: 1, player: 'A. Hakimi', club: 'PSG', assists: 0 },
+    { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
+    { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },
+  ],
+  clScorers: [
+    { pos: 1, player: 'K. Mbappe', club: 'PSG', goals: 0 },
+    { pos: 2, player: 'O. Dembele', club: 'PSG', goals: 0 },
+    { pos: 3, player: 'R. Kolo Muani', club: 'PSG', goals: 0 },
+  ],
+  clAssists: [
     { pos: 1, player: 'A. Hakimi', club: 'PSG', assists: 0 },
     { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
     { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },

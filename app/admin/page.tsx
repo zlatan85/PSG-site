@@ -112,6 +112,8 @@ interface TopAssistRow {
 interface TopStatsPayload {
   scorers: TopScorerRow[];
   assists: TopAssistRow[];
+  clScorers: TopScorerRow[];
+  clAssists: TopAssistRow[];
 }
 
 interface LiveOverridesForm {
@@ -387,6 +389,16 @@ const defaultTopStats: TopStatsPayload = {
     { pos: 3, player: 'R. Kolo Muani', club: 'PSG', goals: 0 },
   ],
   assists: [
+    { pos: 1, player: 'A. Hakimi', club: 'PSG', assists: 0 },
+    { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
+    { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },
+  ],
+  clScorers: [
+    { pos: 1, player: 'K. Mbappe', club: 'PSG', goals: 0 },
+    { pos: 2, player: 'O. Dembele', club: 'PSG', goals: 0 },
+    { pos: 3, player: 'R. Kolo Muani', club: 'PSG', goals: 0 },
+  ],
+  clAssists: [
     { pos: 1, player: 'A. Hakimi', club: 'PSG', assists: 0 },
     { pos: 2, player: 'Vitinha', club: 'PSG', assists: 0 },
     { pos: 3, player: 'K. Mbappe', club: 'PSG', assists: 0 },
@@ -1021,7 +1033,14 @@ export default function AdminPage() {
       const response = await fetch('/api/top-stats');
       const data = await response.json();
       if (data?.scorers && data?.assists) {
-        setTopStats(data);
+        setTopStats({
+          ...defaultTopStats,
+          ...data,
+          scorers: Array.isArray(data.scorers) ? data.scorers : defaultTopStats.scorers,
+          assists: Array.isArray(data.assists) ? data.assists : defaultTopStats.assists,
+          clScorers: Array.isArray(data.clScorers) ? data.clScorers : defaultTopStats.clScorers,
+          clAssists: Array.isArray(data.clAssists) ? data.clAssists : defaultTopStats.clAssists,
+        });
       } else {
         setTopStats(defaultTopStats);
       }
@@ -1281,14 +1300,17 @@ export default function AdminPage() {
     });
   };
 
+  const isAssistTable = (table: keyof TopStatsPayload) =>
+    table === 'assists' || table === 'clAssists';
+
   const addTopStatsRow = (table: keyof TopStatsPayload) => {
     setTopStats((current) => ({
       ...current,
       [table]: [
         ...current[table],
-        table === 'scorers'
-          ? { pos: current[table].length + 1, player: 'Joueur', club: 'Club', goals: 0 }
-          : { pos: current[table].length + 1, player: 'Joueur', club: 'Club', assists: 0 },
+        isAssistTable(table)
+          ? { pos: current[table].length + 1, player: 'Joueur', club: 'Club', assists: 0 }
+          : { pos: current[table].length + 1, player: 'Joueur', club: 'Club', goals: 0 },
       ],
     }));
   };
@@ -3992,6 +4014,162 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => removeTopStatsRow('assists', index)}
+                                className="text-xs text-red-200 hover:text-red-100"
+                              >
+                                Supprimer
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="mt-12">
+          <FadeIn delay={0.38}>
+            <div className="glass rounded-lg p-6 space-y-6">
+              <div className="text-lg font-semibold text-white">Champions League - Tops</div>
+
+              <div className="grid gap-8 lg:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold">Classement Buteurs</h3>
+                    <button
+                      type="button"
+                      onClick={() => addTopStatsRow('clScorers')}
+                      className="text-xs text-red-200 hover:text-red-100"
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-gray-300">
+                      <thead className="text-[11px] uppercase text-gray-400 border-b border-white/10">
+                        <tr>
+                          <th className="py-2 text-left">#</th>
+                          <th className="py-2 text-left">Joueur</th>
+                          <th className="py-2 text-left">Club</th>
+                          <th className="py-2 text-right">Buts</th>
+                          <th className="py-2 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topStats.clScorers.map((row, index) => (
+                          <tr key={`cl-scorer-${index}`} className="border-b border-white/5 last:border-0">
+                            <td className="py-2 pr-2">
+                              <input
+                                type="number"
+                                value={row.pos}
+                                onChange={(event) => updateTopStatsRow('clScorers', index, 'pos', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.player}
+                                onChange={(event) => updateTopStatsRow('clScorers', index, 'player', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.club}
+                                onChange={(event) => updateTopStatsRow('clScorers', index, 'club', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.goals}
+                                onChange={(event) => updateTopStatsRow('clScorers', index, 'goals', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 text-right">
+                              <button
+                                type="button"
+                                onClick={() => removeTopStatsRow('clScorers', index)}
+                                className="text-xs text-red-200 hover:text-red-100"
+                              >
+                                Supprimer
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold">Classement Passeurs</h3>
+                    <button
+                      type="button"
+                      onClick={() => addTopStatsRow('clAssists')}
+                      className="text-xs text-red-200 hover:text-red-100"
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-gray-300">
+                      <thead className="text-[11px] uppercase text-gray-400 border-b border-white/10">
+                        <tr>
+                          <th className="py-2 text-left">#</th>
+                          <th className="py-2 text-left">Joueur</th>
+                          <th className="py-2 text-left">Club</th>
+                          <th className="py-2 text-right">Passes D</th>
+                          <th className="py-2 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topStats.clAssists.map((row, index) => (
+                          <tr key={`cl-assist-${index}`} className="border-b border-white/5 last:border-0">
+                            <td className="py-2 pr-2">
+                              <input
+                                type="number"
+                                value={row.pos}
+                                onChange={(event) => updateTopStatsRow('clAssists', index, 'pos', event.target.value)}
+                                className="w-12 rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.player}
+                                onChange={(event) => updateTopStatsRow('clAssists', index, 'player', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2">
+                              <input
+                                type="text"
+                                value={row.club}
+                                onChange={(event) => updateTopStatsRow('clAssists', index, 'club', event.target.value)}
+                                className="w-full rounded bg-white/10 px-2 py-1 text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 pr-2 text-right">
+                              <input
+                                type="number"
+                                value={row.assists}
+                                onChange={(event) => updateTopStatsRow('clAssists', index, 'assists', event.target.value)}
+                                className="w-14 rounded bg-white/10 px-2 py-1 text-right text-gray-200"
+                              />
+                            </td>
+                            <td className="py-2 text-right">
+                              <button
+                                type="button"
+                                onClick={() => removeTopStatsRow('clAssists', index)}
                                 className="text-xs text-red-200 hover:text-red-100"
                               >
                                 Supprimer

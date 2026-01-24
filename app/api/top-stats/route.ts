@@ -37,7 +37,13 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const stats = await readTopStats();
-  return NextResponse.json(stats ?? defaultTopStats);
+  const fallback = { ...defaultTopStats };
+  return NextResponse.json({
+    scorers: stats?.scorers ?? fallback.scorers,
+    assists: stats?.assists ?? fallback.assists,
+    clScorers: stats?.clScorers ?? fallback.clScorers,
+    clAssists: stats?.clAssists ?? fallback.clAssists,
+  });
 }
 
 export async function PUT(request: Request) {
@@ -47,6 +53,8 @@ export async function PUT(request: Request) {
   const nextStats = {
     scorers: normalizeScorers(payload?.scorers ?? base.scorers),
     assists: normalizeAssists(payload?.assists ?? base.assists),
+    clScorers: normalizeScorers(payload?.clScorers ?? base.clScorers),
+    clAssists: normalizeAssists(payload?.clAssists ?? base.clAssists),
   };
 
   await writeTopStats(nextStats);
