@@ -113,6 +113,12 @@ export default async function LiveMatchPage() {
       : []
     : [];
   const formation = hasOverrides ? liveOverrides!.formation : '4-3-3';
+  const normalizedFormation = formation.includes('-')
+    ? formation
+    : (() => {
+        const digits = formation.match(/\d/g) ?? [];
+        return digits.length >= 3 ? digits.join('-') : formation;
+      })();
 
   const buildLineup = (players: LineupPlayer[], shape: string) => {
     if (players.length === 0) return { gk: { name: '' }, lines: [] as LineupPlayer[][] };
@@ -130,7 +136,7 @@ export default async function LiveMatchPage() {
     return { gk, lines };
   };
 
-  const lineup = buildLineup(starters, formation);
+  const lineup = buildLineup(starters, normalizedFormation);
   const displayLines = [...lineup.lines].reverse();
   const safeEvents = Array.isArray(liveMatch.events) ? liveMatch.events : [];
   const safeMoment = liveMatch.moment ?? { title: 'Moment du match', description: '' };
@@ -259,7 +265,7 @@ export default async function LiveMatchPage() {
                 <h3 className="text-xl font-semibold text-white mb-4">Onze de depart</h3>
                 <div className="space-y-4">
                   <div className="text-sm text-gray-300">
-                    {home.name} · Formation {formation}
+                    {home.name} · Formation {normalizedFormation}
                   </div>
                   <div className="rounded-2xl bg-[#0b1220] border border-white/10 p-4 overflow-hidden">
                     <div className="relative rounded-2xl bg-gradient-to-b from-[#113425] to-[#0a1f18] p-4">

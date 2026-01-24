@@ -1977,13 +1977,13 @@ export default function AdminPage() {
 
     const normalizeList = (value: string) =>
       value
-        .split(/\r?\n|;/)
+        .split(/\r?\n|;|,/)
         .map((item) => item.trim())
         .filter((item) => item.length > 0);
 
     const parseLineupDetails = (value: string) =>
       value
-        .split(/\r?\n|;/)
+        .split(/\r?\n|;|,/)
         .map((line) => line.trim())
         .filter((line) => line.length > 0)
         .map((line) => {
@@ -2828,7 +2828,7 @@ export default function AdminPage() {
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
                   <div className="text-sm text-gray-300 font-semibold">Composition</div>
                   <div className="text-xs text-gray-400">
-                    Un joueur par ligne (11 titulaires). Format optionnel : Nom | URL image
+                    Un joueur par ligne (11 titulaires). Format : Nom | URL image. Separateurs acceptes: nouvelle ligne, ; ou ,
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <textarea
