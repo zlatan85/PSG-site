@@ -94,14 +94,24 @@ export default async function LiveMatchPage() {
     ? { ...liveMatch.away, name: liveOverrides!.awayName || liveMatch.away.name, score: liveOverrides!.awayScore }
     : liveMatch.away;
 
+  const overrideDetails = Array.isArray(liveOverrides?.startersHomeDetails)
+    ? liveOverrides?.startersHomeDetails
+    : [];
+  const overrideNames = Array.isArray(liveOverrides?.startersHome)
+    ? liveOverrides?.startersHome
+    : [];
   const starters = hasOverrides
-    ? Array.isArray(liveOverrides!.startersHomeDetails) && liveOverrides!.startersHomeDetails.length > 0
-      ? liveOverrides!.startersHomeDetails
-      : liveOverrides!.startersHome.map((name) => ({ name }))
+    ? overrideDetails.length > 0
+      ? overrideDetails
+      : overrideNames.map((name) => ({ name }))
     : Array.isArray(liveMatch.lineups?.home)
       ? liveMatch.lineups.home.map((name) => ({ name }))
       : [];
-  const bench = hasOverrides ? liveOverrides!.benchHome : [];
+  const bench = hasOverrides
+    ? Array.isArray(liveOverrides?.benchHome)
+      ? liveOverrides!.benchHome
+      : []
+    : [];
   const formation = hasOverrides ? liveOverrides!.formation : '4-3-3';
 
   const buildLineup = (players: LineupPlayer[], shape: string) => {
