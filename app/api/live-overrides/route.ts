@@ -32,7 +32,7 @@ const normalizeDetails = (value: unknown) => {
       const image = isNonEmptyString(record.image) ? record.image.trim() : '';
       return name ? { name, image } : null;
     })
-    .filter((item): item is { name: string; image?: string } => Boolean(item));
+    .filter((item): item is { name: string; image: string } => Boolean(item));
 };
 
 export const dynamic = 'force-dynamic';
