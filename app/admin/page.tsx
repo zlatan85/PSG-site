@@ -1231,6 +1231,31 @@ export default function AdminPage() {
   const normalizeStandings = (rows: StandingRow[]) =>
     rows.map((row, idx) => ({ ...row, pos: idx + 1 }));
 
+  const parseLineupRows = (value: string) => {
+    const rows = value
+      .split(/\r?\n|;|,/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => {
+        const [namePart, imagePart] = line.split('|').map((item) => item.trim());
+        return { name: namePart || '', image: imagePart || '' };
+      });
+    while (rows.length < 11) {
+      rows.push({ name: '', image: '' });
+    }
+    return rows.slice(0, 11);
+  };
+
+  const updateLineupRow = (index: number, field: 'name' | 'image', value: string) => {
+    const rows = parseLineupRows(liveOverridesForm.startersHomeText);
+    rows[index] = { ...rows[index], [field]: value };
+    const nextText = rows
+      .map((row) => (row.name ? `${row.name}${row.image ? ` | ${row.image}` : ''}` : ''))
+      .filter((line) => line.length > 0)
+      .join('\n');
+    setLiveOverridesForm((current) => ({ ...current, startersHomeText: nextText }));
+  };
+
   const parseDiff = (value: string) => {
     const normalized = value.replace('+', '').trim();
     const parsed = Number.parseInt(normalized, 10);
@@ -2828,20 +2853,35 @@ export default function AdminPage() {
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
                   <div className="text-sm text-gray-300 font-semibold">Composition</div>
                   <div className="text-xs text-gray-400">
-                    Un joueur par ligne (11 titulaires). Format : Nom | URL image. Separateurs acceptes: nouvelle ligne, ; ou ,
+                    Ordre: gardien puis lignes de defense/milieu/attaque selon la formation.
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <textarea
-                      placeholder="Titulaires (Nom | URL image)"
-                      value={liveOverridesForm.startersHomeText}
-                      onChange={handleLiveOverridesChange('startersHomeText')}
-                      className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                    />
+                  <div className="space-y-4">
+                    <div className="grid gap-3">
+                      {parseLineupRows(liveOverridesForm.startersHomeText).map((row, index) => (
+                        <div key={`starter-${index}`} className="grid gap-2 sm:grid-cols-[36px_1fr_1fr] items-center">
+                          <div className="text-xs text-gray-400">#{index + 1}</div>
+                          <input
+                            type="text"
+                            placeholder="Nom du joueur"
+                            value={row.name}
+                            onChange={(event) => updateLineupRow(index, 'name', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                          <input
+                            type="url"
+                            placeholder="URL image"
+                            value={row.image}
+                            onChange={(event) => updateLineupRow(index, 'image', event.target.value)}
+                            className="w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          />
+                        </div>
+                      ))}
+                    </div>
                     <textarea
                       placeholder="Remplacants (1 par ligne)"
                       value={liveOverridesForm.benchHomeText}
                       onChange={handleLiveOverridesChange('benchHomeText')}
-                      className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      className="min-h-[140px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                   </div>
                 </div>
