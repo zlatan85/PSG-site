@@ -84,6 +84,9 @@ const defaultTopStats = {
 export default function CalendarPage() {
   const [filter, setFilter] = useState('all');
   const [showAllMatches, setShowAllMatches] = useState(false);
+  const [topStatsLeague, setTopStatsLeague] = useState<'ligue1' | 'cl'>('ligue1');
+  const [showAllLigue1, setShowAllLigue1] = useState(false);
+  const [showAllChampionsLeague, setShowAllChampionsLeague] = useState(false);
   const [matches, setMatches] = useState<MatchEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [standings, setStandings] = useState(defaultStandings);
@@ -106,6 +109,10 @@ export default function CalendarPage() {
 
     loadMatches();
   }, []);
+
+  useEffect(() => {
+    setShowAllMatches(false);
+  }, [filter]);
 
   useEffect(() => {
     setShowAllMatches(false);
@@ -181,6 +188,12 @@ export default function CalendarPage() {
 
   const primaryMatches = sortedMatches.slice(0, 4);
   const extraMatches = sortedMatches.slice(4);
+  const ligue1Rows = showAllLigue1 ? standings.ligue1 : standings.ligue1.slice(0, 6);
+  const championsLeagueRows = showAllChampionsLeague
+    ? standings.championsLeague
+    : standings.championsLeague.slice(0, 6);
+  const topScorers = topStatsLeague === 'ligue1' ? topStats.scorers : topStats.clScorers;
+  const topAssists = topStatsLeague === 'ligue1' ? topStats.assists : topStats.clAssists;
 
   const getResultColor = (result?: string) => {
     switch (result) {
@@ -299,7 +312,11 @@ export default function CalendarPage() {
                   ? 'Masquer les autres matchs'
                   : `Voir ${extraMatches.length} matchs supplémentaires`}
               </button>
-              {showAllMatches && (
+              <div
+                className={`overflow-hidden transition-all duration-500 ${
+                  showAllMatches ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
                 <div className="mt-4 space-y-4">
                   {extraMatches.map((match, index) => (
                     <ScaleIn key={match.id} delay={0.8 + index * 0.05}>
@@ -322,7 +339,7 @@ export default function CalendarPage() {
                     </ScaleIn>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
           </FadeIn>
         )}
@@ -359,7 +376,7 @@ export default function CalendarPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {standings.ligue1.map((row) => (
+                    {ligue1Rows.map((row) => (
                       <tr key={row.club} className="border-b border-white/5 last:border-0">
                         <td className="py-2">{row.pos}</td>
                         <td className={`py-2 ${row.club === 'PSG' ? 'text-red-300 font-semibold' : ''}`}>{row.club}</td>
@@ -374,6 +391,15 @@ export default function CalendarPage() {
                   </tbody>
                 </table>
               </div>
+              {standings.ligue1.length > 6 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllLigue1((current) => !current)}
+                  className="mt-4 w-full rounded-lg bg-white/10 px-4 py-2 text-xs font-semibold text-white hover:bg-white/20 transition-colors"
+                >
+                  {showAllLigue1 ? 'Masquer le classement complet' : `Voir ${standings.ligue1.length} clubs`}
+                </button>
+              )}
             </div>
           </ScaleIn>
 
@@ -400,7 +426,7 @@ export default function CalendarPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {standings.championsLeague.map((row) => (
+                    {championsLeagueRows.map((row) => (
                       <tr key={row.club} className="border-b border-white/5 last:border-0">
                         <td className="py-2">{row.pos}</td>
                         <td className={`py-2 ${row.club === 'PSG' ? 'text-red-300 font-semibold' : ''}`}>{row.club}</td>
@@ -415,144 +441,123 @@ export default function CalendarPage() {
                   </tbody>
                 </table>
               </div>
+              {standings.championsLeague.length > 6 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllChampionsLeague((current) => !current)}
+                  className="mt-4 w-full rounded-lg bg-white/10 px-4 py-2 text-xs font-semibold text-white hover:bg-white/20 transition-colors"
+                >
+                  {showAllChampionsLeague
+                    ? 'Masquer le classement complet'
+                    : `Voir ${standings.championsLeague.length} clubs`}
+                </button>
+              )}
             </div>
           </ScaleIn>
         </div>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-2">
-          <ScaleIn delay={0.35}>
-            <div className="glass rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold text-white">Classement Buteurs</h2>
-                <span className="text-xs text-gray-400">
-                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-gray-300">
-                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
-                    <tr>
-                      <th className="py-2 text-left">#</th>
-                      <th className="py-2 text-left">Joueur</th>
-                      <th className="py-2 text-left">Club</th>
-                      <th className="py-2 text-right">Buts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topStats.scorers.map((row) => (
-                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
-                        <td className="py-2">{row.pos}</td>
-                        <td className="py-2 text-white">{row.player}</td>
-                        <td className="py-2">{row.club}</td>
-                        <td className="py-2 text-right text-white font-semibold">{row.goals}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        <div className="mt-12">
+          <FadeIn delay={0.34}>
+            <div className="glass rounded-2xl p-6 mb-8">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">Buteurs & Passeurs</h2>
+                  <p className="text-sm text-gray-400">Classements par competition.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {[
+                    { key: 'ligue1' as const, label: 'Ligue 1' },
+                    { key: 'cl' as const, label: 'Champions League' },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setTopStatsLeague(item.key)}
+                      className={`rounded-full px-4 py-1 text-xs font-semibold transition-colors ${
+                        topStatsLeague === item.key
+                          ? 'bg-red-500/30 text-red-100'
+                          : 'bg-white/10 text-gray-200 hover:bg-white/20'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </ScaleIn>
+          </FadeIn>
 
-          <ScaleIn delay={0.4}>
-            <div className="glass rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold text-white">Classement Passeurs</h2>
-                <span className="text-xs text-gray-400">
-                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-gray-300">
-                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
-                    <tr>
-                      <th className="py-2 text-left">#</th>
-                      <th className="py-2 text-left">Joueur</th>
-                      <th className="py-2 text-left">Club</th>
-                      <th className="py-2 text-right">Passes D</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topStats.assists.map((row) => (
-                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
-                        <td className="py-2">{row.pos}</td>
-                        <td className="py-2 text-white">{row.player}</td>
-                        <td className="py-2">{row.club}</td>
-                        <td className="py-2 text-right text-white font-semibold">{row.assists}</td>
+          <div className="grid gap-8 lg:grid-cols-2">
+            <ScaleIn delay={0.35}>
+              <div className="glass rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-semibold text-white">
+                    {topStatsLeague === 'ligue1' ? 'Classement Buteurs' : 'Buteurs - Champions League'}
+                  </h2>
+                  <span className="text-xs text-gray-400">
+                    {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-gray-300">
+                    <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                      <tr>
+                        <th className="py-2 text-left">#</th>
+                        <th className="py-2 text-left">Joueur</th>
+                        <th className="py-2 text-left">Club</th>
+                        <th className="py-2 text-right">Buts</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {topScorers.map((row) => (
+                        <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
+                          <td className="py-2">{row.pos}</td>
+                          <td className="py-2 text-white">{row.player}</td>
+                          <td className="py-2">{row.club}</td>
+                          <td className="py-2 text-right text-white font-semibold">{row.goals}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          </ScaleIn>
-        </div>
+            </ScaleIn>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-2">
-          <ScaleIn delay={0.45}>
-            <div className="glass rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold text-white">Buteurs - Champions League</h2>
-                <span className="text-xs text-gray-400">
-                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-gray-300">
-                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
-                    <tr>
-                      <th className="py-2 text-left">#</th>
-                      <th className="py-2 text-left">Joueur</th>
-                      <th className="py-2 text-left">Club</th>
-                      <th className="py-2 text-right">Buts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topStats.clScorers.map((row) => (
-                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
-                        <td className="py-2">{row.pos}</td>
-                        <td className="py-2 text-white">{row.player}</td>
-                        <td className="py-2">{row.club}</td>
-                        <td className="py-2 text-right text-white font-semibold">{row.goals}</td>
+            <ScaleIn delay={0.4}>
+              <div className="glass rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-semibold text-white">
+                    {topStatsLeague === 'ligue1' ? 'Classement Passeurs' : 'Passeurs - Champions League'}
+                  </h2>
+                  <span className="text-xs text-gray-400">
+                    {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-gray-300">
+                    <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
+                      <tr>
+                        <th className="py-2 text-left">#</th>
+                        <th className="py-2 text-left">Joueur</th>
+                        <th className="py-2 text-left">Club</th>
+                        <th className="py-2 text-right">Passes D</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {topAssists.map((row) => (
+                        <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
+                          <td className="py-2">{row.pos}</td>
+                          <td className="py-2 text-white">{row.player}</td>
+                          <td className="py-2">{row.club}</td>
+                          <td className="py-2 text-right text-white font-semibold">{row.assists}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          </ScaleIn>
-
-          <ScaleIn delay={0.5}>
-            <div className="glass rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold text-white">Passeurs - Champions League</h2>
-                <span className="text-xs text-gray-400">
-                  {topStatsLoading ? 'Chargement...' : 'Mise a jour manuelle'}
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-gray-300">
-                  <thead className="text-xs uppercase text-gray-400 border-b border-white/10">
-                    <tr>
-                      <th className="py-2 text-left">#</th>
-                      <th className="py-2 text-left">Joueur</th>
-                      <th className="py-2 text-left">Club</th>
-                      <th className="py-2 text-right">Passes D</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topStats.clAssists.map((row) => (
-                      <tr key={`${row.player}-${row.pos}`} className="border-b border-white/5 last:border-0">
-                        <td className="py-2">{row.pos}</td>
-                        <td className="py-2 text-white">{row.player}</td>
-                        <td className="py-2">{row.club}</td>
-                        <td className="py-2 text-right text-white font-semibold">{row.assists}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </ScaleIn>
+            </ScaleIn>
+          </div>
         </div>
       </div>
     </div>
