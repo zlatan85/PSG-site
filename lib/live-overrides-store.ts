@@ -15,6 +15,7 @@ export interface LiveOverrides {
   awayScore: number;
   formation: string;
   startersHome: string[];
+  startersHomeDetails?: { name: string; image?: string }[];
   benchHome: string[];
 }
 
@@ -32,6 +33,7 @@ export const defaultLiveOverrides: LiveOverrides = {
   awayScore: 0,
   formation: '4-3-3',
   startersHome: [],
+  startersHomeDetails: [],
   benchHome: [],
 };
 

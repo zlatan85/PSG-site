@@ -5,6 +5,8 @@ import { defaultFanZonePoll, readFanZonePoll } from '../../lib/fan-zone-poll-sto
 
 export const dynamic = 'force-dynamic';
 
+type LineupPlayer = { name: string; image?: string };
+
 const statRows = [
   { key: 'possession', label: 'Possession', suffix: '%' },
   { key: 'shots', label: 'Tirs' },
@@ -93,16 +95,18 @@ export default async function LiveMatchPage() {
     : liveMatch.away;
 
   const starters = hasOverrides
-    ? liveOverrides!.startersHome
+    ? Array.isArray(liveOverrides!.startersHomeDetails) && liveOverrides!.startersHomeDetails.length > 0
+      ? liveOverrides!.startersHomeDetails
+      : liveOverrides!.startersHome.map((name) => ({ name }))
     : Array.isArray(liveMatch.lineups?.home)
-      ? liveMatch.lineups.home
+      ? liveMatch.lineups.home.map((name) => ({ name }))
       : [];
   const bench = hasOverrides ? liveOverrides!.benchHome : [];
   const formation = hasOverrides ? liveOverrides!.formation : '4-3-3';
 
-  const buildLineup = (players: string[], shape: string) => {
-    if (players.length === 0) return { gk: '', lines: [] as string[][] };
-    const gk = players[0] ?? '';
+  const buildLineup = (players: LineupPlayer[], shape: string) => {
+    if (players.length === 0) return { gk: { name: '' }, lines: [] as LineupPlayer[][] };
+    const gk = players[0] ?? { name: '' };
     const parts = shape
       .split('-')
       .map((part) => Number(part))
@@ -219,7 +223,7 @@ export default async function LiveMatchPage() {
           <ScaleIn delay={0.4} className="lg:col-span-2">
             <div className="glass rounded-2xl p-8">
               <h3 className="text-2xl font-semibold text-white mb-6">Fil du match</h3>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[420px] overflow-y-auto pr-2">
                 {safeEvents.map((event) => (
                   <div key={`${event.minute}-${event.player}`} className="flex items-start gap-4 rounded-xl bg-white/5 p-4">
                     <div className="text-lg font-semibold text-white w-12 text-center">{event.minute}&apos;</div>
@@ -247,26 +251,68 @@ export default async function LiveMatchPage() {
                   <div className="text-sm text-gray-300">
                     {home.name} · Formation {formation}
                   </div>
-                  <div className="rounded-2xl bg-[#0b1220] border border-white/10 p-4">
-                    <div className="relative rounded-xl bg-gradient-to-b from-[#10263d] to-[#0a1426] p-4">
-                      <div className="absolute inset-0 rounded-xl border border-white/5" />
-                      <div className="relative space-y-4">
+                  <div className="rounded-2xl bg-[#0b1220] border border-white/10 p-4 overflow-hidden">
+                    <div className="relative rounded-2xl bg-gradient-to-b from-[#113425] to-[#0a1f18] p-4">
+                      <div className="absolute inset-3 rounded-xl border border-white/10" />
+                      <div className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10" />
+                      <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/10" />
+                      <div className="relative space-y-5">
                         {displayLines.map((line, lineIndex) => (
-                          <div key={`line-${lineIndex}`} className="flex justify-evenly gap-2">
-                            {line.map((player) => (
-                              <div
-                                key={player}
-                                className="rounded-full bg-white/10 px-3 py-1 text-xs text-white shadow-sm"
-                              >
-                                {player}
-                              </div>
-                            ))}
+                          <div key={`line-${lineIndex}`} className="flex flex-wrap justify-center gap-3">
+                            {line.map((player) => {
+                              const initials = player.name
+                                .split(' ')
+                                .slice(0, 2)
+                                .map((part) => part.charAt(0))
+                                .join('');
+                              return (
+                                <div key={`${player.name}-${lineIndex}`} className="flex w-16 flex-col items-center">
+                                  <div className="relative h-12 w-12 rounded-full border border-white/20 bg-white/10 shadow-sm">
+                                    {player.image ? (
+                                      <img
+                                        src={player.image}
+                                        alt={player.name}
+                                        className="absolute inset-0 h-full w-full rounded-full object-cover"
+                                        loading="lazy"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-white">
+                                        {initials || 'PSG'}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="mt-1 text-[10px] text-gray-200 text-center leading-tight line-clamp-2">
+                                    {player.name}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         ))}
-                        {lineup.gk && (
+                        {lineup.gk?.name && (
                           <div className="flex justify-center">
-                            <div className="rounded-full bg-red-500/20 px-3 py-1 text-xs text-red-200 shadow-sm">
-                              {lineup.gk}
+                            <div className="flex w-20 flex-col items-center">
+                              <div className="relative h-12 w-12 rounded-full border border-red-400/40 bg-red-500/20 shadow-sm">
+                                {lineup.gk.image ? (
+                                  <img
+                                    src={lineup.gk.image}
+                                    alt={lineup.gk.name}
+                                    className="absolute inset-0 h-full w-full rounded-full object-cover"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-red-100">
+                                    {lineup.gk.name
+                                      .split(' ')
+                                      .slice(0, 2)
+                                      .map((part) => part.charAt(0))
+                                      .join('') || 'GK'}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="mt-1 text-[10px] text-red-100 text-center leading-tight line-clamp-2">
+                                {lineup.gk.name}
+                              </div>
                             </div>
                           </div>
                         )}

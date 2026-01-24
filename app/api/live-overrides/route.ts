@@ -22,6 +22,19 @@ const normalizeList = (value: unknown) => {
   return [];
 };
 
+const normalizeDetails = (value: unknown) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item) => typeof item === 'object' && item !== null)
+    .map((item) => {
+      const record = item as Record<string, unknown>;
+      const name = isNonEmptyString(record.name) ? record.name.trim() : '';
+      const image = isNonEmptyString(record.image) ? record.image.trim() : '';
+      return name ? { name, image } : null;
+    })
+    .filter((item): item is { name: string; image?: string } => Boolean(item));
+};
+
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
@@ -47,6 +60,7 @@ export async function PUT(request: Request) {
     awayScore: toNumber(payload?.awayScore ?? base.awayScore),
     formation: isNonEmptyString(payload?.formation) ? payload.formation.trim() : base.formation,
     startersHome: normalizeList(payload?.startersHome ?? base.startersHome),
+    startersHomeDetails: normalizeDetails(payload?.startersHomeDetails ?? base.startersHomeDetails),
     benchHome: normalizeList(payload?.benchHome ?? base.benchHome),
   };
 

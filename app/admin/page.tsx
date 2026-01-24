@@ -1057,6 +1057,17 @@ export default function AdminPage() {
       setLiveOverridesLoading(true);
       const response = await fetch('/api/live-overrides');
       const data = await response.json();
+      const startersDetails = Array.isArray(data?.startersHomeDetails) ? data.startersHomeDetails : [];
+      const startersText = startersDetails.length > 0
+        ? startersDetails
+            .map((item: { name?: string; image?: string }) =>
+              item?.name ? `${item.name}${item.image ? ` | ${item.image}` : ''}` : ''
+            )
+            .filter((line: string) => line.length > 0)
+            .join('\n')
+        : Array.isArray(data?.startersHome)
+          ? data.startersHome.join('\n')
+          : '';
       setLiveOverridesForm({
         status: data?.status ?? defaultLiveOverridesForm.status,
         minute: String(data?.minute ?? defaultLiveOverridesForm.minute),
@@ -1070,7 +1081,7 @@ export default function AdminPage() {
         homeScore: String(data?.homeScore ?? '0'),
         awayScore: String(data?.awayScore ?? '0'),
         formation: data?.formation ?? '4-3-3',
-        startersHomeText: Array.isArray(data?.startersHome) ? data.startersHome.join('\n') : '',
+        startersHomeText: startersText,
         benchHomeText: Array.isArray(data?.benchHome) ? data.benchHome.join('\n') : '',
       });
     } catch (loadError) {
@@ -1970,6 +1981,22 @@ export default function AdminPage() {
         .map((item) => item.trim())
         .filter((item) => item.length > 0);
 
+    const parseLineupDetails = (value: string) =>
+      value
+        .split(/\r?\n|;/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => {
+          const [namePart, imagePart] = line.split('|').map((item) => item.trim());
+          return {
+            name: namePart,
+            image: imagePart || '',
+          };
+        })
+        .filter((item) => item.name.length > 0);
+
+    const startersDetails = parseLineupDetails(liveOverridesForm.startersHomeText);
+
     const payload = {
       status: liveOverridesForm.status,
       minute: Number(liveOverridesForm.minute) || 0,
@@ -1983,7 +2010,8 @@ export default function AdminPage() {
       homeScore: Number(liveOverridesForm.homeScore) || 0,
       awayScore: Number(liveOverridesForm.awayScore) || 0,
       formation: liveOverridesForm.formation.trim() || '4-3-3',
-      startersHome: normalizeList(liveOverridesForm.startersHomeText),
+      startersHome: startersDetails.map((item) => item.name),
+      startersHomeDetails: startersDetails,
       benchHome: normalizeList(liveOverridesForm.benchHomeText),
     };
 
@@ -2012,7 +2040,16 @@ export default function AdminPage() {
         homeScore: String(data?.homeScore ?? payload.homeScore),
         awayScore: String(data?.awayScore ?? payload.awayScore),
         formation: data?.formation ?? payload.formation,
-        startersHomeText: Array.isArray(data?.startersHome) ? data.startersHome.join('\n') : payload.startersHome.join('\n'),
+        startersHomeText: Array.isArray(data?.startersHomeDetails)
+          ? data.startersHomeDetails
+              .map((item: { name?: string; image?: string }) =>
+                item?.name ? `${item.name}${item.image ? ` | ${item.image}` : ''}` : ''
+              )
+              .filter((line: string) => line.length > 0)
+              .join('\n')
+          : Array.isArray(data?.startersHome)
+            ? data.startersHome.join('\n')
+            : payload.startersHome.join('\n'),
         benchHomeText: Array.isArray(data?.benchHome) ? data.benchHome.join('\n') : payload.benchHome.join('\n'),
       });
     } catch (saveError) {
@@ -2790,10 +2827,12 @@ export default function AdminPage() {
 
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
                   <div className="text-sm text-gray-300 font-semibold">Composition</div>
-                  <div className="text-xs text-gray-400">Un joueur par ligne (11 titulaires).</div>
+                  <div className="text-xs text-gray-400">
+                    Un joueur par ligne (11 titulaires). Format optionnel : Nom | URL image
+                  </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <textarea
-                      placeholder="Titulaires (1 par ligne)"
+                      placeholder="Titulaires (Nom | URL image)"
                       value={liveOverridesForm.startersHomeText}
                       onChange={handleLiveOverridesChange('startersHomeText')}
                       className="min-h-[160px] w-full rounded-lg bg-white/10 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
