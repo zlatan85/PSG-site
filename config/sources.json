@@ -1,0 +1,10 @@
+[
+  {
+    "name": "PSG Officiel",
+    "type": "rss",
+    "url": "https://www.psg.fr/rss/actualites",
+    "language": "fr",
+    "reliabilityWeight": 0.9,
+    "isActive": true
+  }
+]

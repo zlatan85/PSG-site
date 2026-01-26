@@ -183,3 +183,80 @@ model EmailSubscriber {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+
+model Source {
+  id                Int        @id @default(autoincrement())
+  name              String
+  type              String
+  url               String     @unique
+  language          String
+  reliabilityWeight Float      @default(0.5)
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  items             IngestItem[]
+}
+
+model IngestItem {
+  id           Int        @id @default(autoincrement())
+  sourceId     Int
+  url          String     @unique
+  title        String
+  publishedAt  DateTime?
+  language     String?
+  excerptShort String?    @db.Text
+  rawText      String?    @db.LongText
+  fetchedAt    DateTime   @default(now())
+  source       Source     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  clusterItems ClusterItem[]
+}
+
+model Cluster {
+  id         Int               @id @default(autoincrement())
+  topicTitle String
+  status     String            @default("pending")
+  category   String?
+  confidence Float             @default(0.5)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  items      ClusterItem[]
+  contents   GeneratedContent[]
+  drafts     GeneratedArticle[]
+}
+
+model ClusterItem {
+  id         Int        @id @default(autoincrement())
+  clusterId  Int
+  itemId     Int
+  similarity Float?
+  cluster    Cluster    @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  item       IngestItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  @@unique([clusterId, itemId])
+}
+
+model GeneratedContent {
+  id        Int      @id @default(autoincrement())
+  clusterId Int
+  kind      String
+  content   String   @db.LongText
+  createdAt DateTime @default(now())
+  cluster   Cluster  @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+}
+
+model GeneratedArticle {
+  id          Int      @id @default(autoincrement())
+  clusterId   Int
+  title       String
+  slug        String   @unique
+  excerpt     String   @db.Text
+  content     String   @db.LongText
+  imageUrl    String?  @db.Text
+  category    String?
+  tags        Json?
+  sources     Json
+  status      String   @default("draft")
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cluster     Cluster  @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+}
