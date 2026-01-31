@@ -2,9 +2,10 @@ import { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string[] } }
+  { params }: { params: Promise<{ slug: string[] }> }
 ) {
-  const slug = params.slug;
+  const resolved = await params;
+  const slug = resolved.slug ?? [];
   const [width, height] = slug.map(Number);
 
   if (!width || !height || width > 2000 || height > 2000) {
