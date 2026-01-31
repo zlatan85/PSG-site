@@ -79,6 +79,9 @@ export const ingestRssSource = async (source: Source) => {
           undefined
       );
 
+      const rawText =
+        (item as { content?: string }).content?.trim() ?? null;
+
       await prisma.ingestItem.create({
         data: {
           sourceId: source.id,
@@ -87,7 +90,7 @@ export const ingestRssSource = async (source: Source) => {
           publishedAt,
           language: source.language,
           excerptShort: item.contentSnippet?.trim() ?? null,
-          rawText: item.content?.trim() ?? null,
+          rawText,
         },
       });
       created += 1;
