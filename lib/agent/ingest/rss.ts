@@ -73,12 +73,18 @@ export const ingestRssSource = async (source: Source) => {
       const existing = await prisma.ingestItem.findUnique({ where: { url } });
       if (existing) continue;
 
+      const publishedAt = safeDate(
+        (item as { isoDate?: string; pubDate?: string }).isoDate ??
+          (item as { pubDate?: string }).pubDate ??
+          undefined
+      );
+
       await prisma.ingestItem.create({
         data: {
           sourceId: source.id,
           url,
           title,
-          publishedAt: safeDate(item.isoDate ?? item.pubDate ?? undefined),
+          publishedAt,
           language: source.language,
           excerptShort: item.contentSnippet?.trim() ?? null,
           rawText: item.content?.trim() ?? null,
