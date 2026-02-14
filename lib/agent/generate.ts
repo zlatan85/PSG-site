@@ -107,7 +107,7 @@ export const generateArticleDraft = async (clusterId: number) => {
     brief,
   });
 
-  const raw = await generateText({ prompt, temperature: 0.4, maxTokens: 1200 });
+  const raw = await generateText({ prompt, temperature: 0.7, maxTokens: 1400 });
 
   type ArticlePayload = {
     title: string;

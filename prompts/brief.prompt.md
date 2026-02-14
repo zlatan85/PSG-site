@@ -18,7 +18,8 @@ FORMAT OBLIGATOIRE (titres en MAJUSCULES) :
 - ANGLES EDITORIAUX
 - POINTS DE VIGILANCE
 - CE QUI EST INCERTAIN
-- PISTE DE TON (1 ligne max)
+- PISTE DE TON (2 lignes max, piquant mais propre)
+- IDEES DE TITRES (3 propositions fortes, non clickbait)
 
 LONGUEUR : 220 a 350 mots.
 
