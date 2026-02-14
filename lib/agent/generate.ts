@@ -34,6 +34,26 @@ const safeJsonParse = <T>(value: string): T | null => {
   }
 };
 
+const extractJsonCandidate = (value: string) => {
+  const trimmed = value.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
+  if (fenced) return fenced;
+
+  const firstBrace = trimmed.indexOf('{');
+  const lastBrace = trimmed.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return trimmed.slice(firstBrace, lastBrace + 1);
+  }
+
+  return trimmed;
+};
+
+const parseLlmJson = <T>(value: string): T | null => {
+  const direct = safeJsonParse<T>(value);
+  if (direct) return direct;
+  return safeJsonParse<T>(extractJsonCandidate(value));
+};
+
 const ensureSourcesFooter = (content: string, sources: { name: string; url: string; date?: string | null }[]) => {
   const trimmed = content.trim();
   if (/\bSources\b/i.test(trimmed)) return trimmed;
@@ -116,10 +136,12 @@ export const generateArticleDraft = async (clusterId: number) => {
     sources?: { name: string; url: string; date?: string }[];
   };
 
-  const parsed = safeJsonParse<ArticlePayload>(raw);
-  const title = parsed?.title?.trim() || cluster.topicTitle;
+  const parsed = parseLlmJson<ArticlePayload>(raw);
+  const title =
+    parsed?.title?.trim() ||
+    "PSG : ce qu'il faut retenir du dossier du jour";
   const excerpt = parsed?.excerpt?.trim() || `Tour d'horizon autour de ${cluster.topicTitle}.`;
-  const content = ensureSourcesFooter(parsed?.content?.trim() || raw, sources);
+  const content = ensureSourcesFooter(parsed?.content?.trim() || extractJsonCandidate(raw), sources);
   const finalSources = parsed?.sources?.length ? parsed.sources : sources;
 
   const baseSlug = slugify(title) || `cluster-${cluster.id}`;

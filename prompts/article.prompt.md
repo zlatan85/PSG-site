@@ -26,6 +26,8 @@ TITRE (IMPORTANT) :
 - Eviter les titres fades de type "Le PSG gagne", "Point sur...", "Analyse de...".
 - Utiliser si possible une tension narrative (duel, tournant, pression, rebond).
 - Pas de clickbait mensonger.
+- Langue obligatoire: francais uniquement.
+- Interdit de sortir un titre en espagnol, anglais ou melange de langues.
 
 STRUCTURE OBLIGATOIRE DU CONTENT :
 - 4 a 5 paragraphes, chacun precede d'un titre de section.
@@ -49,6 +51,9 @@ FORMAT DE SORTIE : JSON STRICT UNIQUEMENT
     {"name": "Nom du media", "url": "https://...", "date": "YYYY-MM-DD"}
   ]
 }
+
+IMPORTANT:
+- Retourne uniquement l'objet JSON, sans balises Markdown, sans ```json.
 
 Sources disponibles :
 {{sources}}
