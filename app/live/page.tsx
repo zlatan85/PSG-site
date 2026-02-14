@@ -3,6 +3,7 @@ import { readLiveMatch } from '../../lib/live-match-store';
 import { readLiveOverrides } from '../../lib/live-overrides-store';
 import { defaultFanZonePoll, readFanZonePoll } from '../../lib/fan-zone-poll-store';
 import { readFanWall } from '../../lib/fan-wall-store';
+import LiveComments from '../../components/LiveComments';
 
 export const dynamic = 'force-dynamic';
 
@@ -364,32 +365,7 @@ export default async function LiveMatchPage() {
         </div>
 
         <ScaleIn delay={0.42}>
-          <div className="glass rounded-2xl p-8">
-            <div className="flex items-center justify-between gap-3 mb-6">
-              <h3 className="text-2xl font-semibold text-white">Commentaires en direct</h3>
-              <a
-                href="/fan-zone"
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
-              >
-                Ecrire un commentaire
-              </a>
-            </div>
-            {liveComments.length === 0 ? (
-              <p className="text-gray-300">Aucun commentaire valide pour le moment.</p>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {liveComments.map((post) => (
-                  <div key={post.id} className="rounded-xl bg-white/10 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-white font-semibold">{post.name}</p>
-                      <span className="text-xs text-gray-300">{post.time || 'Live'}</span>
-                    </div>
-                    <p className="mt-2 text-sm text-gray-200">{post.message}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <LiveComments initialComments={liveComments} />
         </ScaleIn>
       </div>
     </div>
