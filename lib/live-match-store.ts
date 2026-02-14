@@ -219,59 +219,68 @@ const fetchLiveMatchFromApi = async (): Promise<LiveMatchData | null> => {
   if (Date.now() - apiCache.timestamp < 60_000) {
     return apiCache.data;
   }
+  try {
+    const teamId = process.env.API_FOOTBALL_TEAM_ID ?? '85';
+    const response = await fetch(
+      `https://v3.football.api-sports.io/fixtures?live=all&team=${teamId}`,
+      {
+        headers: {
+          'x-apisports-key': apiKey,
+        },
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(8_000),
+      }
+    );
 
-  const teamId = process.env.API_FOOTBALL_TEAM_ID ?? '85';
-  const response = await fetch(
-    `https://v3.football.api-sports.io/fixtures?live=all&team=${teamId}`,
-    {
-      headers: {
-        'x-apisports-key': apiKey,
-      },
-      next: { revalidate: 60 },
+    if (!response.ok) {
+      apiCache.timestamp = Date.now();
+      apiCache.data = null;
+      return null;
     }
-  );
 
-  if (!response.ok) {
+    const data = (await response.json()) as { response?: ApiFootFixture[] };
+    const fixture = data.response?.[0];
+    if (!fixture) {
+      apiCache.timestamp = Date.now();
+      apiCache.data = null;
+      return null;
+    }
+
+    const fixtureId = fixture.fixture.id;
+    const [statsResponse, eventsResponse] = await Promise.all([
+      fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${fixtureId}`, {
+        headers: { 'x-apisports-key': apiKey },
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(8_000),
+      }),
+      fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, {
+        headers: { 'x-apisports-key': apiKey },
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(8_000),
+      }),
+    ]);
+
+    const statsData = statsResponse.ok
+      ? ((await statsResponse.json()) as { response?: ApiFootStatsEntry[] })
+      : null;
+    const eventsData = eventsResponse.ok
+      ? ((await eventsResponse.json()) as { response?: ApiFootEvent[] })
+      : null;
+
+    const liveMatch = buildLiveMatchFromFixture(
+      fixture,
+      statsData?.response ?? null,
+      eventsData?.response ?? null
+    );
+    apiCache.timestamp = Date.now();
+    apiCache.data = liveMatch;
+    return liveMatch;
+  } catch (error) {
+    console.error('API-Football live error:', error);
     apiCache.timestamp = Date.now();
     apiCache.data = null;
     return null;
   }
-
-  const data = (await response.json()) as { response?: ApiFootFixture[] };
-  const fixture = data.response?.[0];
-  if (!fixture) {
-    apiCache.timestamp = Date.now();
-    apiCache.data = null;
-    return null;
-  }
-
-  const fixtureId = fixture.fixture.id;
-  const [statsResponse, eventsResponse] = await Promise.all([
-    fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${fixtureId}`, {
-      headers: { 'x-apisports-key': apiKey },
-      next: { revalidate: 60 },
-    }),
-    fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`, {
-      headers: { 'x-apisports-key': apiKey },
-      next: { revalidate: 60 },
-    }),
-  ]);
-
-  const statsData = statsResponse.ok
-    ? ((await statsResponse.json()) as { response?: ApiFootStatsEntry[] })
-    : null;
-  const eventsData = eventsResponse.ok
-    ? ((await eventsResponse.json()) as { response?: ApiFootEvent[] })
-    : null;
-
-  const liveMatch = buildLiveMatchFromFixture(
-    fixture,
-    statsData?.response ?? null,
-    eventsData?.response ?? null
-  );
-  apiCache.timestamp = Date.now();
-  apiCache.data = liveMatch;
-  return liveMatch;
 };
 
 const fetchLiveMatchFromFootballData = async (): Promise<LiveMatchData | null> => {
@@ -280,117 +289,134 @@ const fetchLiveMatchFromFootballData = async (): Promise<LiveMatchData | null> =
   if (Date.now() - apiCache.timestamp < 60_000) {
     return apiCache.data;
   }
+  try {
+    const teamId = process.env.FOOTBALL_DATA_TEAM_ID ?? '524';
+    const response = await fetch(
+      `https://api.football-data.org/v4/teams/${teamId}/matches?status=IN_PLAY,PAUSED`,
+      {
+        headers: { 'X-Auth-Token': token },
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(8_000),
+      }
+    );
 
-  const teamId = process.env.FOOTBALL_DATA_TEAM_ID ?? '524';
-  const response = await fetch(
-    `https://api.football-data.org/v4/teams/${teamId}/matches?status=IN_PLAY,PAUSED`,
-    {
-      headers: { 'X-Auth-Token': token },
-      next: { revalidate: 60 },
+    if (!response.ok) {
+      apiCache.timestamp = Date.now();
+      apiCache.data = null;
+      return null;
     }
-  );
 
-  if (!response.ok) {
+    const data = (await response.json()) as { matches?: FootballDataMatch[] };
+    const match = data.matches?.[0];
+    if (!match) {
+      apiCache.timestamp = Date.now();
+      apiCache.data = null;
+      return null;
+    }
+
+    const kickoff = match.utcDate ?? new Date().toISOString();
+    const kickoffTime = new Date(kickoff);
+    const elapsed =
+      Number.isFinite(kickoffTime.getTime())
+        ? Math.max(0, Math.floor((Date.now() - kickoffTime.getTime()) / 60000))
+        : 0;
+    const statusRaw = (match.status ?? '').toUpperCase();
+    const isPaused = statusRaw === 'PAUSED' || statusRaw === 'HALF_TIME';
+    const homeScore =
+      match.score?.fullTime?.home ?? match.score?.halfTime?.home ?? 0;
+    const awayScore =
+      match.score?.fullTime?.away ?? match.score?.halfTime?.away ?? 0;
+    const homeName = match.homeTeam?.name ?? 'PSG';
+    const rawAwayName = match.awayTeam?.name ?? 'Adversaire';
+    const awayName = rawAwayName === homeName ? 'Adversaire' : rawAwayName;
+    const safeMinute =
+      isPaused ? 45 : elapsed > 0 && elapsed < 200 ? elapsed : 0;
+
+    const upcoming = await fetchFootballDataMatches();
+    const nextMatch = upcoming
+      ?.filter((item) => item.status === 'upcoming')
+      .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))[0];
+
+    const liveMatch: LiveMatchData = {
+      status: 'live',
+      minute: safeMinute,
+      period: isPaused ? 'HT' : 'LIVE',
+      competition: match.competition?.name ?? 'Match',
+      stadium: match.venue ?? 'Stade',
+      referee: 'N/A',
+      kickoff,
+      home: {
+        name: homeName,
+        score: homeScore,
+        shots: 0,
+        shotsOnTarget: 0,
+        possession: 0,
+        passes: 0,
+        passAccuracy: 0,
+        fouls: 0,
+        corners: 0,
+        offsides: 0,
+        xg: 0,
+      },
+      away: {
+        name: awayName,
+        score: awayScore,
+        shots: 0,
+        shotsOnTarget: 0,
+        possession: 0,
+        passes: 0,
+        passAccuracy: 0,
+        fouls: 0,
+        corners: 0,
+        offsides: 0,
+        xg: 0,
+      },
+      moment: {
+        title: 'Score en direct',
+        description: `${homeName} ${homeScore} - ${awayScore} ${awayName}`,
+      },
+      events: [],
+      lineups: { home: [], away: [] },
+      nextMatch: nextMatch
+        ? {
+            opponent: nextMatch.away === nextMatch.home ? 'Adversaire' : nextMatch.away,
+            date: `${nextMatch.date}T${nextMatch.time}:00`,
+            competition: nextMatch.competition,
+            venue: nextMatch.stadium,
+          }
+        : {
+            opponent: awayName,
+            date: kickoff,
+            competition: match.competition?.name ?? 'Match',
+            venue: match.venue ?? 'Stade',
+          },
+    };
+
+    apiCache.timestamp = Date.now();
+    apiCache.data = liveMatch;
+    return liveMatch;
+  } catch (error) {
+    console.error('Football-Data live error:', error);
     apiCache.timestamp = Date.now();
     apiCache.data = null;
     return null;
   }
-
-  const data = (await response.json()) as { matches?: FootballDataMatch[] };
-  const match = data.matches?.[0];
-  if (!match) {
-    apiCache.timestamp = Date.now();
-    apiCache.data = null;
-    return null;
-  }
-
-  const kickoff = match.utcDate ?? new Date().toISOString();
-  const kickoffTime = new Date(kickoff);
-  const elapsed =
-    Number.isFinite(kickoffTime.getTime())
-      ? Math.max(0, Math.floor((Date.now() - kickoffTime.getTime()) / 60000))
-      : 0;
-  const statusRaw = (match.status ?? '').toUpperCase();
-  const isPaused = statusRaw === 'PAUSED' || statusRaw === 'HALF_TIME';
-  const homeScore =
-    match.score?.fullTime?.home ?? match.score?.halfTime?.home ?? 0;
-  const awayScore =
-    match.score?.fullTime?.away ?? match.score?.halfTime?.away ?? 0;
-  const homeName = match.homeTeam?.name ?? 'PSG';
-  const rawAwayName = match.awayTeam?.name ?? 'Adversaire';
-  const awayName = rawAwayName === homeName ? 'Adversaire' : rawAwayName;
-  const safeMinute =
-    isPaused ? 45 : elapsed > 0 && elapsed < 200 ? elapsed : 0;
-
-  const upcoming = await fetchFootballDataMatches();
-  const nextMatch = upcoming
-    ?.filter((item) => item.status === 'upcoming')
-    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))[0];
-
-  const liveMatch: LiveMatchData = {
-    status: 'live',
-    minute: safeMinute,
-    period: isPaused ? 'HT' : 'LIVE',
-    competition: match.competition?.name ?? 'Match',
-    stadium: match.venue ?? 'Stade',
-    referee: 'N/A',
-    kickoff,
-    home: {
-      name: homeName,
-      score: homeScore,
-      shots: 0,
-      shotsOnTarget: 0,
-      possession: 0,
-      passes: 0,
-      passAccuracy: 0,
-      fouls: 0,
-      corners: 0,
-      offsides: 0,
-      xg: 0,
-    },
-    away: {
-      name: awayName,
-      score: awayScore,
-      shots: 0,
-      shotsOnTarget: 0,
-      possession: 0,
-      passes: 0,
-      passAccuracy: 0,
-      fouls: 0,
-      corners: 0,
-      offsides: 0,
-      xg: 0,
-    },
-    moment: {
-      title: 'Score en direct',
-      description: `${homeName} ${homeScore} - ${awayScore} ${awayName}`,
-    },
-    events: [],
-    lineups: { home: [], away: [] },
-    nextMatch: nextMatch
-      ? {
-          opponent: nextMatch.away === nextMatch.home ? 'Adversaire' : nextMatch.away,
-          date: `${nextMatch.date}T${nextMatch.time}:00`,
-          competition: nextMatch.competition,
-          venue: nextMatch.stadium,
-        }
-      : {
-          opponent: awayName,
-          date: kickoff,
-          competition: match.competition?.name ?? 'Match',
-          venue: match.venue ?? 'Stade',
-        },
-  };
-
-  apiCache.timestamp = Date.now();
-  apiCache.data = liveMatch;
-  return liveMatch;
 };
 
 export async function readLiveMatch(): Promise<LiveMatchData | null> {
-  const apiLive = await fetchLiveMatchFromApi();
+  let apiLive: LiveMatchData | null = null;
+  try {
+    apiLive = await fetchLiveMatchFromApi();
+  } catch (error) {
+    console.error('readLiveMatch API-Football fallback error:', error);
+  }
   if (apiLive) return apiLive;
-  const limitedLive = await fetchLiveMatchFromFootballData();
+  let limitedLive: LiveMatchData | null = null;
+  try {
+    limitedLive = await fetchLiveMatchFromFootballData();
+  } catch (error) {
+    console.error('readLiveMatch Football-Data fallback error:', error);
+  }
   if (limitedLive) return limitedLive;
   const record = await prisma.liveMatch.findUnique({ where: { id: 1 } });
   if (!record) {
