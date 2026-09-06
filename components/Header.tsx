@@ -20,31 +20,45 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 w-full z-50 border-b border-white/10 bg-[#0b1020]/85 backdrop-blur-lg">
+    <header className="fixed top-0 w-full z-40 border-b-2 border-[#E30613] bg-[#001428]/92 backdrop-blur-lg">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 justify-between">
-          <div className="flex">
-            <div className="flex flex-shrink-0 items-center">
-              <Link href="/" className="text-white font-bold text-xl tracking-wide">
-                ULTEAM PSG-X
-              </Link>
-            </div>
-          </div>
-          <div className="hidden md:ml-6 md:flex md:space-x-8">
+        <div className="flex h-16 items-center justify-between gap-6">
+          <Link href="/" className="font-anton text-xl tracking-wide text-white whitespace-nowrap">
+            ULTEAM <span className="text-[#E30613]">PSG-X</span>
+          </Link>
+
+          <div className="hidden lg:flex lg:items-center lg:gap-5 font-barlow text-[13px] font-semibold uppercase tracking-[0.14em] text-[#93b0c9]">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-200 hover:border-red-400 hover:text-white transition-colors"
+                className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#E30613] hover:text-white"
               >
                 {item.name}
               </Link>
             ))}
           </div>
-          <div className="-mr-2 flex items-center md:hidden">
+
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/live"
+              className="flex items-center gap-2 bg-[#E30613] px-3 py-1.5 font-plex-sans text-[11px] font-bold tracking-[0.14em] text-white"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-white psgx-blink" />
+              DIRECT
+            </Link>
+            <Link
+              href="/profile"
+              className="border border-[#CEAB5D] px-4 py-2 font-plex-sans text-xs font-semibold tracking-[0.14em] text-[#CEAB5D] transition-colors hover:bg-[#CEAB5D] hover:text-[#001b31]"
+            >
+              CONNEXION
+            </Link>
+          </div>
+
+          <div className="-mr-2 flex items-center lg:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-white/10 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             >
               <span className="sr-only">Ouvrir le menu principal</span>
               {isOpen ? (
@@ -63,18 +77,25 @@ export default function Header() {
 
       {isOpen && (
         <FadeIn>
-          <div className="md:hidden bg-[#0b1020]/95 backdrop-blur-lg">
-            <div className="space-y-1 pb-3 pt-2">
+          <div className="lg:hidden bg-[#001428]/97 backdrop-blur-lg">
+            <div className="space-y-1 pb-3 pt-2 font-barlow text-sm font-semibold uppercase tracking-[0.1em]">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-200 hover:border-red-400 hover:bg-white/10 hover:text-white"
+                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-[#93b0c9] hover:border-[#E30613] hover:bg-white/10 hover:text-white"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
+              <Link
+                href="/profile"
+                className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-[#CEAB5D] hover:border-[#CEAB5D] hover:bg-white/10"
+                onClick={() => setIsOpen(false)}
+              >
+                Connexion
+              </Link>
             </div>
           </div>
         </FadeIn>
